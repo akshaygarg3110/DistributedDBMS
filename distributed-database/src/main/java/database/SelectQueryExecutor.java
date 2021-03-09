@@ -1,16 +1,26 @@
 package database;
 
+import database.DBMSDataTypes.DataType;
+import database.Operators.Operator;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.*;
 
+
 public class SelectQueryExecutor {
     private String tableName;
     private String databaseName;
-    private Map<String, Object> constraintMap;
+    private List<String> lhsConstraint;
+    private List<String> rhsConstraint;
+    private List<Operator> operatorConstraint;
     private List<String> fieldList;
     private Map<Integer, String> fieldMap;
     private Map<String, String> rowMap;
+    private Map<Integer, DataType> tableColumnsDataTypeMap;
+    private List<String> conditionalOperators;
 
     public SelectQueryExecutor(String tableName, String databaseName) {
         this.tableName = tableName;
@@ -21,37 +31,85 @@ public class SelectQueryExecutor {
         this.fieldList = fieldList;
     }
 
-    public void setConstraintMap(Map<String, Object> constraintMap) {
-        this.constraintMap = constraintMap;
+
+    BufferedReader getMetaReader() throws Exception {
+        String metaPath = this.databaseName + "/meta.csv";
+        return new BufferedReader(new FileReader(metaPath));
+    }
+
+    BufferedReader getTableReader() throws Exception {
+        String tablePath = this.databaseName + '/' + this.tableName;
+        return new BufferedReader(new FileReader(tablePath));
     }
 
     void populateColumnMap() {
         try {
-            String tablePath = this.databaseName + '/' + this.tableName;
-            BufferedReader tableReader = new BufferedReader(new FileReader(tablePath));
-            String rows = "";
+            BufferedReader tableReader = getTableReader();
+            String rows;
             rows = tableReader.readLine();
             String[] columns = rows.split(",");
             fieldMap = new HashMap<>();
-            for( int i = 0; i < columns.length; i++) {
+            for (int i = 0; i < columns.length; i++) {
                 fieldMap.put(i, columns[i]);
             }
-        } catch(Exception e) {
+            tableReader.close();
+        } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    void convertJSONAttributesToDataTypeMap(String dataType) {
+        JSONObject columnObject = new JSONObject(dataType);
+        JSONArray columnArray = new JSONArray(columnObject.get("columns").toString());
+        this.tableColumnsDataTypeMap = new HashMap<>();
+        for (int i = 0; i < columnArray.length(); i++) {
+            JSONObject columnDetail = new JSONObject(columnArray.get(i).toString());
+            DataType dataTypeOfColumn = new DBMSDataTypes().getDataType(columnDetail.getString("type"));
+            this.tableColumnsDataTypeMap.put(i, dataTypeOfColumn);
+        }
+    }
+
+    void convertArrayAttributesToDataTypeMap(String dataType) {
+        String[] columnArray = dataType.split(",");
+        for (int i = 0; i < columnArray.length; i++) {
+            DataType dataTypeOfColumn = new DBMSDataTypes().getDataType(columnArray[i]);
+            this.tableColumnsDataTypeMap.put(i, dataTypeOfColumn);
+        }
+    }
+
+    void populateDataTypeMap() {
+        try {
+            BufferedReader metaReader = getMetaReader();
+            String rows;
+            String dataType = null;
+            while ((rows = metaReader.readLine()) != null) {
+                String[] row = rows.split(",");
+                if (row[0].equalsIgnoreCase(this.tableName)) {
+                    dataType = row[1];
+                    break;
+                }
+            }
+            convertArrayAttributesToDataTypeMap(dataType);
+            convertJSONAttributesToDataTypeMap(dataType);
+            metaReader.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
 
     Map<Integer, List<String>> executeSelectStatementWithFullColumns() {
         try {
             Map<Integer, List<String>> selectResult = new HashMap<>();
-            String tablePath = this.databaseName + '/' + this.tableName;
-            BufferedReader tableReader = new BufferedReader(new FileReader(tablePath));
-            String rows = tableReader.readLine();
-            int rowCounter = 1;
-            while((rows = tableReader.readLine()) != null) {
-                String[] values = rows.split(",");
-                selectResult.put(rowCounter, Arrays.asList(values));
+            BufferedReader tableReader = getTableReader();
+            String rows;
+            int rowCounter = 0;
+            while ((rows = tableReader.readLine()) != null) {
+                if (rowCounter > 0) {
+                    String[] values = rows.split(",");
+                    selectResult.put(rowCounter, Arrays.asList(values));
+                }
                 rowCounter++;
             }
             return selectResult;
@@ -61,15 +119,21 @@ public class SelectQueryExecutor {
         return null;
     }
 
-
-    Map<Integer, List<String>> executeSelectStatementWithColumnList() {
+    List<Integer> filterIndexOfColumn(List<String> fieldList) {
         populateColumnMap();
         List<Integer> filteredIndex = new ArrayList<>();
-        for(Map.Entry<Integer, String> column: fieldMap.entrySet()) {
+        for (Map.Entry<Integer, String> column : fieldMap.entrySet()) {
             if (fieldList.contains(column.getValue())) {
                 filteredIndex.add(column.getKey());
             }
         }
+        return filteredIndex;
+    }
+
+
+    Map<Integer, List<String>> executeSelectStatementWithColumnList() {
+        List<Integer> filteredIndex = filterIndexOfColumn(fieldList);
+        Map<Integer, List<String>> filteredSelectResult = new HashMap<>();
         Map<Integer, List<String>> selectResult = executeSelectStatementWithFullColumns();
         if (selectResult != null) {
             for (Map.Entry<Integer, List<String>> row : selectResult.entrySet()) {
@@ -79,16 +143,79 @@ public class SelectQueryExecutor {
                         filteredColumnValues.add(row.getValue().get(i));
                     }
                 }
-                row.setValue(filteredColumnValues);
+                filteredSelectResult.put(row.getKey(), filteredColumnValues);
             }
-            return selectResult;
+            return filteredSelectResult;
         } else {
             return null;
         }
     }
 
+
+    private List<DataType> filterDataTypeOfIndex(List<Integer> lhsConstraint) {
+        populateDataTypeMap();
+        List<DataType> filteredDataTypeOfIndex = new ArrayList<>();
+        for (Map.Entry<Integer, DataType> column : tableColumnsDataTypeMap.entrySet()) {
+            if (lhsConstraint.contains(column.getKey())) {
+                filteredDataTypeOfIndex.add(column.getValue());
+            }
+        }
+        return filteredDataTypeOfIndex;
+    }
+
     Map<Integer, List<String>> executeSelectStatementWithConstraint() {
+        List<Integer> filteredIndexOfLhs = filterIndexOfColumn(lhsConstraint);
+        List<DataType> loadTypesOfIndex = filterDataTypeOfIndex(filteredIndexOfLhs);
+        Map<Integer, List<String>> selectResult = executeSelectStatementWithFullColumns();
+        Map<Integer, List<String>> filteredResultOnConstraints = new HashMap<>();
+        if (selectResult != null) {
+            for (Map.Entry<Integer, List<String>> row : selectResult.entrySet()) {
+                if (constraintsMatch(filteredIndexOfLhs, row.getValue(), loadTypesOfIndex)) {
+                    filteredResultOnConstraints.put(row.getKey(), row.getValue());
+                }
+            }
+            return filteredResultOnConstraints;
+        }
         return null;
+    }
+
+    private boolean constraintsMatch(List<Integer> filteredIndexOfLhs, List<String> value, List<DataType> loadTypesOfIndex) {
+        List<Boolean> testPassOrder = new ArrayList<>();
+        for (int i = 0; i < filteredIndexOfLhs.size(); i++) {
+            Operator operator = operatorConstraint.get(i);
+            int columnIndex = filteredIndexOfLhs.get(i);
+            String actualValue = value.get(columnIndex);
+            String expectedValue = rhsConstraint.get(i);
+            Operators operators = new Operators(operator);
+            if (loadTypesOfIndex.get(i) == DataType.INTEGER) {
+                if (operators.performIntComparison(Integer.parseInt(actualValue), Integer.parseInt(expectedValue))) {
+                    testPassOrder.add(true);
+                } else {
+                    testPassOrder.add(false);
+                }
+            } else {
+                if (operators.performStringComparison(actualValue, expectedValue)) {
+                    testPassOrder.add(true);
+                } else {
+                    testPassOrder.add(false);
+                }
+            }
+        }
+        int testPassIndexMover = 0;
+        for (int i = 0; i < conditionalOperators.size(); i++) {
+            if (testPassIndexMover + 1 < testPassOrder.size()) {
+                if (conditionalOperators.get(i).equalsIgnoreCase("and")) {
+                    testPassOrder.set(testPassIndexMover + 1,
+                            testPassOrder.get(testPassIndexMover) && testPassOrder.get(testPassIndexMover + 1));
+                }
+                if (conditionalOperators.get(i).equalsIgnoreCase("or")) {
+                    testPassOrder.set(testPassIndexMover + 1,
+                            testPassOrder.get(testPassIndexMover) || testPassOrder.get(testPassIndexMover + 1));
+                }
+                testPassIndexMover++;
+            }
+        }
+        return testPassOrder.get(testPassIndexMover-1);
     }
 
 
