@@ -1,6 +1,7 @@
 package database;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.ArrayList;
@@ -40,7 +41,8 @@ public class TransactionManager {
 
     void endAndExecuteTransaction() {
         try {
-            BufferedReader metaReader = new BufferedReader(new FileReader(databaseName + "/" + String.valueOf(transactionId)));
+            String filePath = databaseName + "/" + String.valueOf(transactionId);
+            BufferedReader metaReader = new BufferedReader(new FileReader(filePath));
             String rows = null;
             transactionList = new ArrayList<>();
             while ((rows = metaReader.readLine()) != null) {
@@ -48,6 +50,9 @@ public class TransactionManager {
             }
             List<String> queryToBeExecutedList = queryThatIsExecutedInTransaction(transactionList);
             //send the list of executable queries to parser to tokenize and execute by corresponding executor.
+            //delete transaction stored file.
+            File file =  new File(filePath);
+            file.delete();
         } catch (Exception e) {
             e.printStackTrace();
         }
