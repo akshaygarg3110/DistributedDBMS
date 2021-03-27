@@ -33,7 +33,7 @@ public class SelectQueryExecutor {
 
 
     BufferedReader getMetaReader() throws Exception {
-        String metaPath = this.databaseName + "/meta.csv";
+        String metaPath = this.databaseName + "/meta.txt";
         return new BufferedReader(new FileReader(metaPath));
     }
 
@@ -47,7 +47,7 @@ public class SelectQueryExecutor {
             BufferedReader tableReader = getTableReader();
             String rows;
             rows = tableReader.readLine();
-            String[] columns = rows.split(",");
+            String[] columns = rows.split("\\$");
             fieldMap = new HashMap<>();
             for (int i = 0; i < columns.length; i++) {
                 fieldMap.put(i, columns[i]);
@@ -70,7 +70,7 @@ public class SelectQueryExecutor {
     }
 
     void convertArrayAttributesToDataTypeMap(String dataType) {
-        String[] columnArray = dataType.split(",");
+        String[] columnArray = dataType.split("\\$");
         for (int i = 0; i < columnArray.length; i++) {
             DataType dataTypeOfColumn = new DBMSDataTypes().getDataType(columnArray[i]);
             this.tableColumnsDataTypeMap.put(i, dataTypeOfColumn);
@@ -83,7 +83,7 @@ public class SelectQueryExecutor {
             String rows;
             String dataType = null;
             while ((rows = metaReader.readLine()) != null) {
-                String[] row = rows.split(",");
+                String[] row = rows.split("\\$");
                 if (row[0].equalsIgnoreCase(this.tableName)) {
                     dataType = row[1];
                     break;
@@ -107,7 +107,7 @@ public class SelectQueryExecutor {
             int rowCounter = 0;
             while ((rows = tableReader.readLine()) != null) {
                 if (rowCounter > 0) {
-                    String[] values = rows.split(",");
+                    String[] values = rows.split("\\$");
                     selectResult.put(rowCounter, Arrays.asList(values));
                 }
                 rowCounter++;
@@ -202,13 +202,13 @@ public class SelectQueryExecutor {
             }
         }
         int testPassIndexMover = 0;
-        for (int i = 0; i < conditionalOperators.size(); i++) {
+        for (String conditionalOperator : conditionalOperators) {
             if (testPassIndexMover + 1 < testPassOrder.size()) {
-                if (conditionalOperators.get(i).equalsIgnoreCase("and")) {
+                if (conditionalOperator.equalsIgnoreCase("and")) {
                     testPassOrder.set(testPassIndexMover + 1,
                             testPassOrder.get(testPassIndexMover) && testPassOrder.get(testPassIndexMover + 1));
                 }
-                if (conditionalOperators.get(i).equalsIgnoreCase("or")) {
+                if (conditionalOperator.equalsIgnoreCase("or")) {
                     testPassOrder.set(testPassIndexMover + 1,
                             testPassOrder.get(testPassIndexMover) || testPassOrder.get(testPassIndexMover + 1));
                 }
