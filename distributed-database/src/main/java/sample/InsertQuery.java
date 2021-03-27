@@ -1,27 +1,37 @@
 package sample;
 
-import com.opencsv.CSVWriter;
 import java.io.*;
 import java.util.*;
 
-
 public class InsertQuery {
+
+    private String tableName;
+    private String databaseName;
+
+    public InsertQuery(String tableName, String databaseName) {
+        this.tableName = tableName;
+        this.databaseName = databaseName;
+    }
 
     public void performInsertQueryOperation(String[] values) throws IOException
     {
         try {
-            String rootPath = "/Users/preethz/Desktop";
-            String dbName = "DemoDB";
-            String tableName = "Demo.csv";
-
-            File file = new File(rootPath + '/' + dbName + '/' + tableName);
-            BufferedWriter tableWriter = new BufferedWriter(new FileWriter(file, true));
-            CSVWriter csvWriter = new CSVWriter(tableWriter, ',', CSVWriter.NO_QUOTE_CHARACTER);
-
+            File file = new File(databaseName + '/' + tableName);
+            FileWriter fileWriter = new FileWriter(file, true);
+            BufferedWriter tableWriter = new BufferedWriter(fileWriter);
             List<String[]> list = new ArrayList<>();
             list.add(values);
-            csvWriter.writeAll(list);
-            csvWriter.close();
+            String a = null;
+            for(String[] temp : list)
+            {
+                a = Arrays.toString(temp);
+                System.out.println(a);
+            }
+            String arr = a.substring(1, a.length() - 1 );
+            System.out.println(arr);
+            tableWriter.newLine();
+            tableWriter.write(arr);
+            tableWriter.close();
         }
         catch(IOException e) {
             e.getStackTrace();

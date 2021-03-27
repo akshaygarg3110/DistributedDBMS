@@ -1,25 +1,29 @@
 package sample;
 
-import com.opencsv.CSVWriter;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DeleteQuery {
 
+    private String tableName;
+    private String databaseName;
+
+    public DeleteQuery(String tableName, String databaseName) {
+        this.tableName = tableName;
+        this.databaseName = databaseName;
+    }
+
     public void performDeleteQueryOperation(String column_name, String column_value) throws IOException
     {
-        String rootPath = "/Users/preethz/Desktop";
-        String dbName = "DemoDB";
-        String tblName = "Demo.csv";
-        String temp = "myFile2.txt";
+        String temp = "myFile2.csv";
 
-        File inputFile = new File(rootPath + '/' + dbName + '/' + tblName);
-        File tempFile = new File(rootPath + '/' + dbName + '/' + temp);
+        File inputFile = new File( databaseName + '/' + tableName);
+        File tempFile = new File(  databaseName + '/' + temp);
 
         BufferedReader tableReader = new BufferedReader(new FileReader(inputFile));
         BufferedWriter tableWriter = new BufferedWriter(new FileWriter(tempFile));
-        CSVWriter csvWriter = new CSVWriter(tableWriter,',',CSVWriter.NO_QUOTE_CHARACTER);
+        //CSVWriter csvWriter = new CSVWriter(tableWriter,',',CSVWriter.NO_QUOTE_CHARACTER);
 
         // DELETE from table_name WHERE column_name = column_value;
         // DELETE from Demo WHERE Age = 99;
@@ -43,10 +47,12 @@ public class DeleteQuery {
                         records.add(columns);
                     }
                 }
-                csvWriter.writeAll(records);
+                tableWriter.append((CharSequence) records);
+                //csvWriter.writeAll(records);
                 inputFile.delete();
                 tempFile.renameTo(inputFile);
-                csvWriter.close();
+                tableWriter.close();
+                //csvWriter.close();
             }
             catch(IOException e){
                 e.getStackTrace();
@@ -59,8 +65,8 @@ public class DeleteQuery {
             List<String[]> list = new ArrayList<>();
             list.add(columnHeaders.split(","));
 
-            csvWriter.writeAll(list);
-            csvWriter.close();
+            //csvWriter.writeAll(list);
+            //csvWriter.close();
             inputFile.delete();
             tempFile.renameTo(inputFile);
         }
