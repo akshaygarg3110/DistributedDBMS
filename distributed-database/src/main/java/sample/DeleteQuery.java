@@ -1,25 +1,28 @@
 package sample;
 
-import com.opencsv.CSVWriter;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
+import java.sql.Struct;
+import java.util.*;
 
 public class DeleteQuery {
 
+    private String tableName;
+    private String databaseName;
+
+    public DeleteQuery(String tableName, String databaseName) {
+        this.tableName = tableName;
+        this.databaseName = databaseName;
+    }
+
     public void performDeleteQueryOperation(String column_name, String column_value) throws IOException
     {
-        String rootPath = "/Users/preethz/Desktop";
-        String dbName = "DemoDB";
-        String tblName = "Demo.csv";
-        String temp = "myFile2.txt";
+        String temp = "myFile2.csv";
 
-        File inputFile = new File(rootPath + '/' + dbName + '/' + tblName);
-        File tempFile = new File(rootPath + '/' + dbName + '/' + temp);
+        File inputFile = new File(databaseName + '/' + tableName);
+        File tempFile = new File(databaseName + '/' + temp);
 
         BufferedReader tableReader = new BufferedReader(new FileReader(inputFile));
         BufferedWriter tableWriter = new BufferedWriter(new FileWriter(tempFile));
-        CSVWriter csvWriter = new CSVWriter(tableWriter,',',CSVWriter.NO_QUOTE_CHARACTER);
 
         // DELETE from table_name WHERE column_name = column_value;
         // DELETE from Demo WHERE Age = 99;
@@ -28,39 +31,42 @@ public class DeleteQuery {
                 String line = tableReader.readLine();
                 int lineIndex = 0;
                 int columnIndex = findIndex(line, column_name);
-                System.out.println(columnIndex);
+
                 List<String[]> records = new ArrayList<>();
-                records.add(line.split(","));
-                System.out.println(records);
+                records.add(line.split("\\$"));
                 while ((line = tableReader.readLine()) != null) {
                     lineIndex++;
-                    String[] columns = line.split(",");
+                    String[] columns = line.split("\\$");
                     if(columns[columnIndex].trim().equals(column_value)) {
-                        System.out.println("Deleted " + columns[1] );
+                        System.out.println("Skipped " + columns[columnIndex]);
                         continue;
                     }
-                    else {
+                    else{
+                        System.out.println("Added " + columns[columnIndex]);
                         records.add(columns);
                     }
                 }
-                csvWriter.writeAll(records);
+                for(String[] i : records)
+                {
+                    tableWriter.write(String.join("$",i));
+                    tableWriter.newLine();
+                }
+                tableWriter.close();
                 inputFile.delete();
                 tempFile.renameTo(inputFile);
-                csvWriter.close();
-            }
-            catch(IOException e){
+            } catch (IOException e) {
                 e.getStackTrace();
             }
-        }
-        else {
-            String columnHeaders = tableReader.readLine();
-            System.out.println(columnHeaders);
+        } else{
+            String line = tableReader.readLine();
 
-            List<String[]> list = new ArrayList<>();
-            list.add(columnHeaders.split(","));
-
-            csvWriter.writeAll(list);
-            csvWriter.close();
+            List<String[]> records = new ArrayList<>();
+            records.add(line.split("\\$"));
+            for(String[] i : records)
+            {
+                tableWriter.write(String.join("$",i));
+            }
+            tableWriter.close();
             inputFile.delete();
             tempFile.renameTo(inputFile);
         }
@@ -68,7 +74,7 @@ public class DeleteQuery {
 
     public int findIndex(String line, String column_name){
         int columnIndex = 0;
-        String[] columnHeaders = line.split(",");
+        String[] columnHeaders = line.split("//$");
         for(String value:columnHeaders) {
             if(value.trim().equals(column_name)) {
                 break;
@@ -80,4 +86,5 @@ public class DeleteQuery {
         return columnIndex;
     }
 }
+
 
