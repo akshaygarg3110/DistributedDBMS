@@ -14,7 +14,7 @@ public class CreateDatabaseQuery {
 	public static void main(String[] args) {
 		System.out.println("Started");
 		CreateDatabaseQuery CreateDatabaseQuery = new CreateDatabaseQuery();
-		CreateDatabaseQuery.exceuteCreateDatabaseQuery("test2");	
+		CreateDatabaseQuery.exceuteCreateDatabaseQuery("test3");	
 	}
 
 }

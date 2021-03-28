@@ -1,13 +1,15 @@
 package database;
 
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 public class QueryParser {
+
+	private static String databaseName;
 
 	public void parsingQuery(String query) {
 
@@ -17,7 +19,8 @@ public class QueryParser {
 
 			query.replaceAll("\\s+", " ");
 
-			Pattern pattern = Pattern.compile("^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE )",
+			Pattern pattern = Pattern.compile(
+					"^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE DATABASE )",
 					Pattern.CASE_INSENSITIVE);
 			Matcher matcher = pattern.matcher(query);
 			boolean matchFound = matcher.find();
@@ -25,30 +28,22 @@ public class QueryParser {
 				String queryType = matcher.group();
 				System.out.println("Match found");
 
-				if (queryType.trim().equalsIgnoreCase("SELECT")) {
-
+				if (queryType.trim().equalsIgnoreCase("CREATE DATABASE")) {
+					tokenizeCreateDatabaseQuery(pattern, matcher, query);
+				} else if (queryType.trim().equalsIgnoreCase("USE DATABASE")) {
+					tokenizeUseDatabaseQuery(pattern, matcher, query);
+				} else if (StringUtils.isBlank(QueryParser.databaseName)) {
+					System.out.println("Please specify database");
+				} else if (queryType.trim().equalsIgnoreCase("SELECT")) {
 					tokenizeSelectQuery(pattern, matcher, query);
-
 				} else if (queryType.trim().equalsIgnoreCase("UPDATE")) {
-
 					tokenizeUpdateQuery(pattern, matcher, query);
-
 				} else if (queryType.trim().equalsIgnoreCase("INSERT")) {
-
 					tokenizeInsertQuery(pattern, matcher, query);
-
 				} else if (queryType.trim().equalsIgnoreCase("DELETE")) {
-
 					tokenizeDeleteQuery(pattern, matcher, query);
-
 				} else if (queryType.trim().equalsIgnoreCase("CREATE TABLE")) {
-
-					tokenizeCreateTableQuery(pattern, matcher, queryType);
-
-				} else if (queryType.trim().equalsIgnoreCase("CREATE DATABASE")) {
-
-					tokenizeCreateDatabaseQuery(pattern, matcher, queryType);
-
+					tokenizeCreateTableQuery(pattern, matcher, query);
 				}
 			} else {
 				System.out.println("Query syntax is not correct, please check keywords spellings and order.");
@@ -139,7 +134,7 @@ public class QueryParser {
 
 			for (String columnDesc : columnDescArray) {
 				pattern = Pattern.compile(
-						"([\\w]+)\\s*( INT| VARCHAR)\\s*( PRIMARY KEY| REFERENCES\\s+([\\w]+)\\((\\w+)\\))\\s*?",
+						"([\\w]+)\\s*( INT| VARCHAR)\\s*( PRIMARY KEY| REFERENCES\\s+([\\w]+)\\((\\w+)\\))?\\s*$",
 						Pattern.CASE_INSENSITIVE);
 				matcher = pattern.matcher(columnDesc);
 				if (matcher.find()) {
@@ -170,31 +165,51 @@ public class QueryParser {
 				} else {
 					System.out.println("Please check syntax of the command.");
 				}
-				
-				tableColumnsObject.put("columns", columnArray);
-				tableForeignKeysObject.put("keys", foreignKeyArray);
 			}
-			
+			tableColumnsObject.put("columns", columnArray);
+			tableForeignKeysObject.put("keys", foreignKeyArray);
+			CreateTableQuery createTableQuery = new CreateTableQuery();
+			createTableQuery.exceuteCreateTableQuery(QueryParser.databaseName, tableName, primaryKey,
+					tableColumnsObject, tableForeignKeysObject);
+
 		} else {
 			System.out.println("Query syntax is not correct, please check keywords spellings and order.");
 		}
 	}
 
 	private void tokenizeCreateDatabaseQuery(Pattern pattern, Matcher matcher, String query) {
-		pattern = Pattern.compile("(CREATE)\\s+(DATABASE)\\s+([\\w]+)$", Pattern.CASE_INSENSITIVE);
+		pattern = Pattern.compile("(CREATE)\\s+(DATABASE)\\s+([\\w]+)\\s*$", Pattern.CASE_INSENSITIVE);
 		matcher = pattern.matcher(query);
 
 		if (matcher.find()) {
-			String operation = matcher.group(1);
-			String subOperation = matcher.group(2);
 			String databaseName = matcher.group(3);
+			CreateDatabaseQuery createDatabaseQuery = new CreateDatabaseQuery();
+			createDatabaseQuery.exceuteCreateDatabaseQuery(databaseName);
+		} else {
+			System.out.println("Query syntax is not correct, please check keywords spellings and order.");
+		}
+	}
+
+	private void tokenizeUseDatabaseQuery(Pattern pattern, Matcher matcher, String query) {
+		pattern = Pattern.compile("(USE)\\s+(DATABASE)\\s+([\\w]+)\\s*$", Pattern.CASE_INSENSITIVE);
+		matcher = pattern.matcher(query);
+
+		if (matcher.find()) {
+			String databaseName = matcher.group(3);
+			QueryParser.databaseName = databaseName;
 		} else {
 			System.out.println("Query syntax is not correct, please check keywords spellings and order.");
 		}
 	}
 
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
+		QueryParser parser = new QueryParser();
+		String query = "CREATE DATABASE test";
+		parser.parsingQuery(query);
+		query = "USE DATABASE test";
+		parser.parsingQuery(query);
+		query = "CREATE TABLE Persons_2 (PersonID int PRIMARY KEY,LastName varchar, FirstName varchar REFERENCES Persons(PersonID), Address varchar, City varchar)";
+		parser.parsingQuery(query);
 
 	}
 }
