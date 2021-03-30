@@ -4,12 +4,17 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class QueryParser {
 
     private static String databaseName;
+
+    public QueryParser() {
+    }
 
     public void parsingQuery(String query) {
 
@@ -20,7 +25,7 @@ public class QueryParser {
             query.replaceAll("\\s+", " ");
 
             Pattern pattern = Pattern.compile(
-                    "^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE DATABASE )",
+                    "^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE DATABASE |BEGIN TRANSACTION)",
                     Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(query);
             boolean matchFound = matcher.find();
@@ -44,11 +49,31 @@ public class QueryParser {
                     tokenizeDeleteQuery(pattern, matcher, query);
                 } else if (queryType.trim().equalsIgnoreCase("CREATE TABLE")) {
                     tokenizeCreateTableQuery(pattern, matcher, query);
+                } else if (queryType.trim().equalsIgnoreCase("BEGIN TRANSACTION")) {
+                    tokenizeTransactionQuery(pattern, matcher, query);
                 }
             } else {
                 System.out.println("Query syntax is not correct, please check keywords spellings and order.");
             }
         }
+    }
+
+    private void tokenizeTransactionQuery(Pattern pattern, Matcher matcher, String query) {
+        try {
+            TransactionManager transactionManager = new TransactionManager(databaseName);
+            BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+            String line = "";
+            while (!line.equalsIgnoreCase("END")) {
+                line = in.readLine();
+                transactionManager.addTransaction(line);
+            }
+            in.close();
+            transactionManager.endAndExecuteTransaction();
+        } catch (Exception e) {
+            System.out.println("Transaction failed");
+            e.printStackTrace();
+        }
+
     }
 
     private void tokenizeSelectQuery(Pattern pattern, Matcher matcher, String query) {

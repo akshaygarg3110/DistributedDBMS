@@ -30,7 +30,8 @@ public class TransactionManager {
 
     void addTransaction(String transactionStatement) {
         try {
-            FileWriter tempTransWriter = new FileWriter(databaseName + "/" + String.valueOf(transactionId));
+            String filePath = databaseName + "/" + String.valueOf(transactionId) + ".txt";
+            FileWriter tempTransWriter = new FileWriter(filePath);
             tempTransWriter.write(transactionStatement);
             tempTransWriter.write("\n");
             tempTransWriter.close();
@@ -39,9 +40,9 @@ public class TransactionManager {
         }
     }
 
-    void endAndExecuteTransaction() {
+    public void endAndExecuteTransaction() {
         try {
-            String filePath = databaseName + "/" + String.valueOf(transactionId);
+            String filePath = databaseName + "/" + transactionId + ".txt";
             BufferedReader metaReader = new BufferedReader(new FileReader(filePath));
             String rows = null;
             transactionList = new ArrayList<>();
@@ -49,8 +50,10 @@ public class TransactionManager {
                 transactionList.add(rows);
             }
             List<String> queryToBeExecutedList = queryThatIsExecutedInTransaction(transactionList);
-            //send the list of executable queries to parser to tokenize and execute by corresponding executor.
-            //delete transaction stored file.
+            QueryParser qp = new QueryParser();
+            for (String query : queryToBeExecutedList) {
+                qp.parsingQuery(query);
+            }
             File file =  new File(filePath);
             file.delete();
         } catch (Exception e) {
