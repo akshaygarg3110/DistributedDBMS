@@ -38,7 +38,7 @@ public class SelectQueryExecutor {
     }
 
     BufferedReader getTableReader() throws Exception {
-        String tablePath = this.databaseName + '/' + this.tableName;
+        String tablePath = this.databaseName + '/' + this.tableName + ".txt";
         return new BufferedReader(new FileReader(tablePath));
     }
 
@@ -89,13 +89,11 @@ public class SelectQueryExecutor {
                     break;
                 }
             }
-            convertArrayAttributesToDataTypeMap(dataType);
             convertJSONAttributesToDataTypeMap(dataType);
             metaReader.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
 
@@ -119,11 +117,20 @@ public class SelectQueryExecutor {
         return null;
     }
 
+    private boolean containsIgnoreCase(List<String> columnList, String searchString) {
+        for (String column : columnList) {
+            if (column.equalsIgnoreCase(searchString)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     List<Integer> filterIndexOfColumn(List<String> fieldList) {
         populateColumnMap();
         List<Integer> filteredIndex = new ArrayList<>();
         for (Map.Entry<Integer, String> column : fieldMap.entrySet()) {
-            if (fieldList.contains(column.getValue())) {
+            if (containsIgnoreCase(fieldList, column.getValue())) {
                 filteredIndex.add(column.getKey());
             }
         }
@@ -135,6 +142,16 @@ public class SelectQueryExecutor {
         List<Integer> filteredIndex = filterIndexOfColumn(fieldList);
         Map<Integer, List<String>> filteredSelectResult = new HashMap<>();
         Map<Integer, List<String>> selectResult = executeSelectStatementWithFullColumns();
+        return getIntegerListMap(selectResult, filteredIndex, filteredSelectResult);
+    }
+
+    Map<Integer, List<String>> executeSelectStatementWithColumnList(Map<Integer, List<String>> selectResult) {
+        List<Integer> filteredIndex = filterIndexOfColumn(fieldList);
+        Map<Integer, List<String>> filteredSelectResult = new HashMap<>();
+        return getIntegerListMap(selectResult, filteredIndex, filteredSelectResult);
+    }
+
+    private Map<Integer, List<String>> getIntegerListMap(Map<Integer, List<String>> selectResult, List<Integer> filteredIndex, Map<Integer, List<String>> filteredSelectResult) {
         if (selectResult != null) {
             for (Map.Entry<Integer, List<String>> row : selectResult.entrySet()) {
                 List<String> filteredColumnValues = new ArrayList<>();
@@ -174,6 +191,9 @@ public class SelectQueryExecutor {
                     filteredResultOnConstraints.put(row.getKey(), row.getValue());
                 }
             }
+            if (fieldList != null) {
+                return executeSelectStatementWithColumnList(filteredResultOnConstraints);
+            }
             return filteredResultOnConstraints;
         }
         return null;
@@ -201,22 +221,81 @@ public class SelectQueryExecutor {
                 }
             }
         }
-        int testPassIndexMover = 0;
-        for (String conditionalOperator : conditionalOperators) {
-            if (testPassIndexMover + 1 < testPassOrder.size()) {
-                if (conditionalOperator.equalsIgnoreCase("and")) {
-                    testPassOrder.set(testPassIndexMover + 1,
-                            testPassOrder.get(testPassIndexMover) && testPassOrder.get(testPassIndexMover + 1));
+        if (conditionalOperators != null) {
+            int testPassIndexMover = 0;
+            for (String conditionalOperator : conditionalOperators) {
+                if (testPassIndexMover + 1 < testPassOrder.size()) {
+                    if (conditionalOperator.equalsIgnoreCase("and")) {
+                        testPassOrder.set(testPassIndexMover + 1,
+                                testPassOrder.get(testPassIndexMover) && testPassOrder.get(testPassIndexMover + 1));
+                    }
+                    if (conditionalOperator.equalsIgnoreCase("or")) {
+                        testPassOrder.set(testPassIndexMover + 1,
+                                testPassOrder.get(testPassIndexMover) || testPassOrder.get(testPassIndexMover + 1));
+                    }
+                    testPassIndexMover++;
                 }
-                if (conditionalOperator.equalsIgnoreCase("or")) {
-                    testPassOrder.set(testPassIndexMover + 1,
-                            testPassOrder.get(testPassIndexMover) || testPassOrder.get(testPassIndexMover + 1));
-                }
-                testPassIndexMover++;
             }
+            return testPassOrder.get(testPassIndexMover - 1);
         }
-        return testPassOrder.get(testPassIndexMover-1);
+        return testPassOrder != null && testPassOrder.get(0);
     }
 
+    void executeSelectMain(String operation, String columns, String conditions) {
+
+        if (conditions != null && !conditions.equalsIgnoreCase("")) {
+            Operator operator = null;
+            if (conditions.contains("=")) {
+                operator = Operator.EQUAL_TO;
+            }
+            if (conditions.contains(">")) {
+                operator = Operator.GREATER_THAN;
+            }
+            if (conditions.contains("<")) {
+                operator = Operator.LESSER_THAN;
+            }
+            if (conditions.contains("!=")) {
+                operator = Operator.NOT_EQUAL;
+            }
+            if (conditions.contains(">=")) {
+                operator = Operator.GREATER_THAN_EQUALS;
+            }
+            if (conditions.contains("<=")) {
+                operator = Operator.LESSER_THAN_EQUALS;
+            }
+            operatorConstraint = new ArrayList<>();
+            operatorConstraint.add(operator);
+            String[] operands = conditions.split(operator.getOperatorString());
+            lhsConstraint = new ArrayList<>();
+            lhsConstraint.add(operands[0]);
+            rhsConstraint = new ArrayList<>();
+            rhsConstraint.add(operands[1]);
+            System.out.println("Successfully fetched based on conditions:");
+            if (!columns.equalsIgnoreCase("*")) {
+                fieldList = Arrays.asList(columns.split(","));
+            }
+            System.out.println(executeSelectStatementWithConstraint().values());
+        } else {
+            if (columns.equalsIgnoreCase("*")) {
+                System.out.println("Successfully fetched records");
+                populateColumnMap();
+                System.out.println(fieldMap);
+                System.out.println(executeSelectStatementWithFullColumns().values());
+            } else {
+                fieldList = Arrays.asList(columns.split(","));
+                System.out.println("Successfully fetched records");
+                System.out.println(fieldList);
+                System.out.println(executeSelectStatementWithColumnList().values());
+            }
+        }
+    }
+
+    public static void main(String args[]) {
+        SelectQueryExecutor sqe = new SelectQueryExecutor("students", "test");
+        String operation = "Select";
+        String columns = "*";
+        String conditions = "English<90";
+        sqe.executeSelectMain(operation, columns, conditions);
+    }
 
 }

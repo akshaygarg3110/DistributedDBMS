@@ -9,7 +9,7 @@ public class Operators {
         LESSER_THAN(1, "<"),
         GREATER_THAN_EQUALS(2, ">="),
         LESSER_THAN_EQUALS(3, "<="),
-        EQUAL_TO(4, "=="),
+        EQUAL_TO(4, "="),
         NOT_EQUAL(5, "!=");
 
         private int id;

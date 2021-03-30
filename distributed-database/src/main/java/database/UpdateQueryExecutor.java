@@ -90,4 +90,8 @@ public class UpdateQueryExecutor {
         return false;
     }
 
+    void executeUpdateMain(String[] operations, String condition) {
+
+    }
+
 }

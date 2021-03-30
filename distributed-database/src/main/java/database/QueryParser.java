@@ -58,9 +58,11 @@ public class QueryParser {
 
 		if (matcher.find()) {
 			String operation = matcher.group(1);
-			String[] columns = matcher.group(2).split(",");
+			String columns = matcher.group(2);
 			String tableName = matcher.group(3);
 			String conditions = matcher.group(5);
+			SelectQueryExecutor sqe = new SelectQueryExecutor(tableName, databaseName);
+			sqe.executeSelectMain(operation, columns, conditions);
 		} else {
 			System.out.println("Query syntax is not correct, please check keywords spellings and order.");
 		}
@@ -76,6 +78,8 @@ public class QueryParser {
 			String tableName = matcher.group(2);
 			String[] updateOperations = matcher.group(2).split(",");
 			String conditions = matcher.group(5);
+			UpdateQueryExecutor uqe = new UpdateQueryExecutor(tableName, databaseName);
+			uqe.executeUpdateMain(updateOperations, conditions);
 		} else {
 			System.out.println("Query syntax is not correct, please check keywords spellings and order.");
 		}
