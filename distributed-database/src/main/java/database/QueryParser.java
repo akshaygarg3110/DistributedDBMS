@@ -290,7 +290,7 @@ public class QueryParser {
         String query = "USE DATABASE DemoDB";
         parser.parsingQuery(query);
         //query = "INSERT INTO Department(Id,Name) VALUES (4,Pilot)";
-        //query = "DELETE FROM Demo WHERE Name=Rocky";
+        query = "DELETE FROM Demo WHERE DepartmentId=13";
         //query = "TRUNCATE TABLE Demo";
         //query = "DROP TABLE Demo";
         parser.parsingQuery(query);

@@ -14,6 +14,7 @@ public class DistributedSystem {
             BufferedReader bufferedReader = new BufferedReader(fileReader);
             FileWriter fileWriter = new FileWriter(outputFile, true);
             BufferedWriter bufferedWriter = new BufferedWriter(fileWriter);
+
             String currentLine;
             while ((currentLine = bufferedReader.readLine()) != null) {
                 String[] line = currentLine.split("@@@");
@@ -22,11 +23,14 @@ public class DistributedSystem {
                     if (list.get(i).contains(tableName)) {
                         String output = tableName + " table belongs to " + list.get(0) + " database";
                         System.out.println(output);
+                        bufferedWriter.write(output);
+                        bufferedWriter.newLine();
+                        //bufferedWriter.flush();
                     }
                 }
             }
-        } catch(IOException ioException)
-        {
+            bufferedWriter.close();
+        } catch(IOException ioException) {
             ioException.getStackTrace();
         }
     }

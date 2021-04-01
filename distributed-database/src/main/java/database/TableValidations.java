@@ -26,7 +26,7 @@ public class TableValidations {
     }
 
     BufferedReader getTableReader() throws Exception {
-        String tablePath = this.databaseName + '/' + this.tableName;
+        String tablePath = this.databaseName + '/' + this.tableName + ".txt";
         return new BufferedReader(new FileReader(tablePath));
     }
 

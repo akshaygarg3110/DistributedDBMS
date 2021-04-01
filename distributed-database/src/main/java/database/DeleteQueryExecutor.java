@@ -14,7 +14,7 @@ public class DeleteQueryExecutor {
         this.databaseName = databaseName;
     }
 
-    public void splitCondition(String condition)
+    public void splitCondition(String condition) //Id=2
     {
         try {
             String operator = fetchOperation(condition);
@@ -25,7 +25,7 @@ public class DeleteQueryExecutor {
             }
             String column_name = records.get(0);
             String column_value = records.get(1);
-            performDeleteQueryOperation(column_name,column_value);
+            performDeleteQueryOperation(column_name,column_value,operator);
 
         } catch(Exception e){
             e.getStackTrace();
@@ -54,9 +54,9 @@ public class DeleteQueryExecutor {
         return "";
     }
 
-
-    public void performDeleteQueryOperation(String column_name, String column_value) throws IOException
+    public void performDeleteQueryOperation(String column_name, String column_value, String operator) throws IOException
     {
+        System.out.println(operator);
         String temp = "myFile2.csv";
 
         File inputFile = new File(databaseName + '/' + tableName + ".csv");
@@ -76,13 +76,70 @@ public class DeleteQueryExecutor {
                 while ((line = tableReader.readLine()) != null) {
                     lineIndex++;
                     String[] columns = line.split("\\$");
-                    if(columns[columnIndex].trim().equals(column_value)) {
-                        System.out.println("Skipped " + columns[columnIndex]);
-                        continue;
+                    if(operator.equals("=")) {
+                        if (columns[columnIndex].trim().equals(column_value)) {
+                            System.out.println("Skipped " + columns[columnIndex]);
+                            continue;
+                        }
+                        else{
+                            System.out.println("Added " + columns[columnIndex]);
+                            records.add(columns);
+                        }
                     }
-                    else{
-                        System.out.println("Added " + columns[columnIndex]);
-                        records.add(columns);
+                    else if(operator.equals(">"))
+                    {
+                        if(Integer.parseInt(columns[columnIndex]) > Integer.parseInt(column_value)){
+                            System.out.println("Skipped " + columns[columnIndex]);
+                            continue;
+                        }
+                        else{
+                            System.out.println("Added " + columns[columnIndex]);
+                            records.add(columns);
+                        }
+                    }
+                    else if(operator.equals(">="))
+                    {
+                        if(Integer.parseInt(columns[columnIndex]) >= Integer.parseInt(column_value)){
+                            System.out.println("Skipped " + columns[columnIndex]);
+                            continue;
+                        }
+                        else{
+                            System.out.println("Added " + columns[columnIndex]);
+                            records.add(columns);
+                        }
+                    }
+                    else if(operator.equals("<"))
+                    {
+                        if(Integer.parseInt(columns[columnIndex]) < Integer.parseInt(column_value)){
+                            System.out.println("Skipped " + columns[columnIndex]);
+                            continue;
+                        }
+                        else{
+                            System.out.println("Added " + columns[columnIndex]);
+                            records.add(columns);
+                        }
+                    }
+                    else if(operator.equals("<="))
+                    {
+                        if(Integer.parseInt(columns[columnIndex]) <= Integer.parseInt(column_value)){
+                            System.out.println("Skipped " + columns[columnIndex]);
+                            continue;
+                        }
+                        else{
+                            System.out.println("Added " + columns[columnIndex]);
+                            records.add(columns);
+                        }
+                    }
+                    else if(operator.equals("!="))
+                    {
+                        if(Integer.parseInt(columns[columnIndex]) != Integer.parseInt(column_value)){
+                            System.out.println("Skipped " + columns[columnIndex]);
+                            continue;
+                        }
+                        else{
+                            System.out.println("Added " + columns[columnIndex]);
+                            records.add(columns);
+                        }
                     }
                 }
                 for(String[] i : records)
@@ -96,7 +153,7 @@ public class DeleteQueryExecutor {
             } catch (IOException e) {
                 e.getStackTrace();
             }
-        } else{
+        } else {
             String line = tableReader.readLine();
 
             List<String[]> records = new ArrayList<>();
@@ -113,7 +170,7 @@ public class DeleteQueryExecutor {
 
     public int findIndex(String line, String column_name){
         int columnIndex = 0;
-        String[] columnHeaders = line.split("//$");
+        String[] columnHeaders = line.split("\\$");
         for(String value:columnHeaders) {
             if(value.trim().equals(column_name)) {
                 break;
