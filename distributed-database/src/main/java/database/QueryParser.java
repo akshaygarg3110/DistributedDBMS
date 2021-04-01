@@ -5,6 +5,7 @@ import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -25,7 +26,7 @@ public class QueryParser {
             query.replaceAll("\\s+", " ");
 
             Pattern pattern = Pattern.compile(
-                    "^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE DATABASE |BEGIN TRANSACTION)",
+                    "^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE DATABASE |BEGIN TRANSACTION |DROP TABLE |TRUNCATE TABLE)",
                     Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(query);
             boolean matchFound = matcher.find();
@@ -51,6 +52,10 @@ public class QueryParser {
                     tokenizeCreateTableQuery(pattern, matcher, query);
                 } else if (queryType.trim().equalsIgnoreCase("BEGIN TRANSACTION")) {
                     tokenizeTransactionQuery(pattern, matcher, query);
+                } else if (queryType.trim().equalsIgnoreCase("DROP TABLE")){
+                    tokenizeDropQuery(pattern, matcher, query);
+                } else if (queryType.trim().equalsIgnoreCase("TRUNCATE TABLE")){
+                    tokenizeTruncateQuery(pattern, matcher, query);
                 }
             } else {
                 System.out.println("Query syntax is not correct, please check keywords spellings and order.");
@@ -73,7 +78,47 @@ public class QueryParser {
             System.out.println("Transaction failed");
             e.printStackTrace();
         }
+    }
 
+    private void tokenizeInsertQuery(Pattern pattern, Matcher matcher, String query) {
+        pattern = Pattern.compile(
+                "(INSERT)\\s+INTO\\s+([\\w]+)\\s*(\\(([\\w, ]+)\\))?\\s*\\s+VALUES\\s+\\(([\\w, ]+)\\)$",
+                Pattern.CASE_INSENSITIVE);
+        matcher = pattern.matcher(query);
+
+        if (matcher.find()) {
+            String operation = matcher.group(1);
+            String tableName = matcher.group(2);
+            String[] columnNames = matcher.group(4).split(",");
+            String[] columnValues = matcher.group(5).split(",");
+
+            try {
+                InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor(tableName, databaseName);
+                insertQueryExecutor.performInsertQueryOperation(columnValues);
+            }
+            catch(IOException e){
+                System.out.println("Cannot write to database" + e.getMessage());
+                e.getStackTrace();
+            }
+
+        } else {
+            System.out.println("Query syntax is not correct, please check keywords spellings and order.");
+        }
+    }
+
+    private void tokenizeDeleteQuery(Pattern pattern, Matcher matcher, String query) {
+        pattern = Pattern.compile("(DELETE)\\s+FROM\\s+([\\w]+)\\s* WHERE\\s+((\\S)+)?$", Pattern.CASE_INSENSITIVE);
+        matcher = pattern.matcher(query);
+
+        if (matcher.find()) {
+            String operation = matcher.group(1);
+            String tableName = matcher.group(2);
+            String conditions = matcher.group(3);
+            DeleteQueryExecutor deleteQueryExecutor = new DeleteQueryExecutor(tableName, databaseName);
+            deleteQueryExecutor.splitCondition(conditions);
+        } else {
+            System.out.println("Query syntax is not correct, please check keywords spellings and order.");
+        }
     }
 
     private void tokenizeSelectQuery(Pattern pattern, Matcher matcher, String query) {
@@ -105,35 +150,6 @@ public class QueryParser {
             String conditions = matcher.group(5);
             UpdateQueryExecutor uqe = new UpdateQueryExecutor(tableName, databaseName);
             uqe.executeUpdateMain(updateOperations, conditions);
-        } else {
-            System.out.println("Query syntax is not correct, please check keywords spellings and order.");
-        }
-    }
-
-    private void tokenizeInsertQuery(Pattern pattern, Matcher matcher, String query) {
-        pattern = Pattern.compile(
-                "(INSERT)\\s+INTO\\s+([\\w]+)\\s*(\\(([\\w, ]+)\\))?\\s*\\s+VALUES\\s+\\(([\\w, ]+)\\)$",
-                Pattern.CASE_INSENSITIVE);
-        matcher = pattern.matcher(query);
-
-        if (matcher.find()) {
-            String operation = matcher.group(1);
-            String tableName = matcher.group(2);
-            String[] columnNames = matcher.group(4).split(",");
-            String[] columnValues = matcher.group(5).split(",");
-        } else {
-            System.out.println("Query syntax is not correct, please check keywords spellings and order.");
-        }
-    }
-
-    private void tokenizeDeleteQuery(Pattern pattern, Matcher matcher, String query) {
-        pattern = Pattern.compile("(DELETE)\\s+FROM\\s+([\\w]+)\\s*( WHERE\\s+(\\S)+)?$", Pattern.CASE_INSENSITIVE);
-        matcher = pattern.matcher(query);
-
-        if (matcher.find()) {
-            String operation = matcher.group(1);
-            String tableName = matcher.group(2);
-            String conditions = matcher.group(4);
         } else {
             System.out.println("Query syntax is not correct, please check keywords spellings and order.");
         }
@@ -231,14 +247,52 @@ public class QueryParser {
         }
     }
 
+    private void tokenizeDropQuery(Pattern pattern, Matcher matcher, String query)
+    {
+        pattern = Pattern.compile("(DROP)\\s+(TABLE)\\s+([\\w]+)\\s*$", Pattern.CASE_INSENSITIVE);
+        matcher = pattern.matcher(query);
+
+        if (matcher.find()) {
+            String tableName = matcher.group(3);
+            try {
+                DropQueryExecutor dropQueryExecutor = new DropQueryExecutor(databaseName);
+                dropQueryExecutor.performDropQueryOperation(tableName);
+            } catch(IOException e) {
+                System.out.println("Cannot DROP table" + e.getMessage());
+                e.getStackTrace();
+            }
+        } else {
+            System.out.println("Query syntax is not correct, please check keywords spellings and order.");
+        }
+    }
+
+    private void tokenizeTruncateQuery(Pattern pattern, Matcher matcher, String query)
+    {
+        pattern = Pattern.compile("(TRUNCATE)\\s+(TABLE)\\s+([\\w]+)\\s*$", Pattern.CASE_INSENSITIVE);
+        matcher = pattern.matcher(query);
+
+        if (matcher.find()) {
+            String tableName = matcher.group(3);
+            try {
+                TruncateQueryExecutor truncateQueryExecutor = new TruncateQueryExecutor(databaseName);
+                truncateQueryExecutor.performTruncateQueryOperation(tableName);
+            } catch(IOException e) {
+                System.out.println("Cannot TRUNCATE table" + e.getMessage());
+                e.getStackTrace();
+            }
+        } else {
+            System.out.println("Query syntax is not correct, please check keywords spellings and order.");
+        }
+    }
+
     public static void main(String[] args) {
         QueryParser parser = new QueryParser();
-        String query = "CREATE DATABASE test";
+        String query = "USE DATABASE DemoDB";
         parser.parsingQuery(query);
-        query = "USE DATABASE test";
+        //query = "INSERT INTO Department(Id,Name) VALUES (4,Pilot)";
+        //query = "DELETE FROM Demo WHERE Name=Rocky";
+        //query = "TRUNCATE TABLE Demo";
+        //query = "DROP TABLE Demo";
         parser.parsingQuery(query);
-        query = "CREATE TABLE Persons_2 (PersonID int PRIMARY KEY,LastName varchar, FirstName varchar REFERENCES Persons(PersonID), Address varchar, City varchar)";
-        parser.parsingQuery(query);
-
     }
 }

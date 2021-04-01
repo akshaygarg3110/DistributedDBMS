@@ -1,31 +1,70 @@
-package sample;
+package database;
 
 import java.io.*;
-import java.sql.Struct;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
-public class DeleteQuery {
+public class DeleteQueryExecutor {
 
     private String tableName;
     private String databaseName;
 
-    public DeleteQuery(String tableName, String databaseName) {
+    public DeleteQueryExecutor(String tableName, String databaseName) {
         this.tableName = tableName;
         this.databaseName = databaseName;
     }
+
+    public void splitCondition(String condition)
+    {
+        try {
+            String operator = fetchOperation(condition);
+            String[] values = condition.split(operator);
+            List<String> records = new ArrayList<>();
+            for(int i=0; i< values.length; i++) {
+                records.add(values[i]);
+            }
+            String column_name = records.get(0);
+            String column_value = records.get(1);
+            performDeleteQueryOperation(column_name,column_value);
+
+        } catch(Exception e){
+            e.getStackTrace();
+        }
+    }
+
+    private String fetchOperation(String condition) {
+        if (condition.contains(">=")) {
+            return ">=";
+        }
+        if (condition.contains("!=")) {
+            return "!=";
+        }
+        if (condition.contains("<=")) {
+            return "<=";
+        }
+        if (condition.contains("=")) {
+            return "=";
+        }
+        if (condition.contains(">")) {
+            return ">";
+        }
+        if (condition.contains("<")) {
+            return "<";
+        }
+        return "";
+    }
+
 
     public void performDeleteQueryOperation(String column_name, String column_value) throws IOException
     {
         String temp = "myFile2.csv";
 
-        File inputFile = new File(databaseName + '/' + tableName);
+        File inputFile = new File(databaseName + '/' + tableName + ".csv");
         File tempFile = new File(databaseName + '/' + temp);
 
         BufferedReader tableReader = new BufferedReader(new FileReader(inputFile));
         BufferedWriter tableWriter = new BufferedWriter(new FileWriter(tempFile));
 
-        // DELETE from table_name WHERE column_name = column_value;
-        // DELETE from Demo WHERE Age = 99;
         if ((column_name != null) && (column_value != null)) {
             try {
                 String line = tableReader.readLine();

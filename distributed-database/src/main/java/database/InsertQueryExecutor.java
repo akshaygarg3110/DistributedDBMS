@@ -1,22 +1,25 @@
-package sample;
+package database;
 
-import java.io.*;
-import java.util.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 
-public class InsertQuery {
+public class InsertQueryExecutor {
     private String tableName;
     private String databaseName;
 
-    public InsertQuery(String tableName, String databaseName) {
+    public InsertQueryExecutor(String tableName, String databaseName) {
         this.tableName = tableName;
         this.databaseName = databaseName;
     }
-
     public void performInsertQueryOperation(String[] values) throws IOException
     {
         try {
-            File file = new File(databaseName + '/' + tableName);
+            File file = new File(databaseName + '/' + tableName + ".csv");
             FileWriter fileWriter = new FileWriter(file, true);
             BufferedWriter tableWriter = new BufferedWriter(fileWriter);
             List<String> list = Arrays.asList(values);
@@ -29,5 +32,4 @@ public class InsertQuery {
             e.getStackTrace();
         }
     }
-
 }

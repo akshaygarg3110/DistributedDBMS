@@ -1,18 +1,16 @@
-package sample;
+package database;
 
 import java.io.*;
 
-public class DropQuery {
-    private String tableName;
+public class DropQueryExecutor {
     private String databaseName;
 
-    public DropQuery(String tableName, String databaseName) {
-        this.tableName = tableName;
+    public DropQueryExecutor(String databaseName){
         this.databaseName = databaseName;
     }
 
-    public void performDropQueryOperation() throws IOException {
-        File inputFile = new File(databaseName + '/' + tableName);
+    public void performDropQueryOperation(String tableName) throws IOException {
+        File inputFile = new File(databaseName + '/' + tableName + ".csv");
         if (inputFile.exists()) {
             try {
                 inputFile.delete();

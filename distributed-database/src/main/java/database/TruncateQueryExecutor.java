@@ -1,20 +1,18 @@
-package sample;
+package database;
 
 import java.io.*;
 
-public class TruncateQuery {
-    private String tableName;
+public class TruncateQueryExecutor {
     private String databaseName;
 
-    public TruncateQuery(String tableName, String databaseName) {
-        this.tableName = tableName;
+    public TruncateQueryExecutor(String databaseName) {
         this.databaseName = databaseName;
     }
-    public void performTruncateQueryOperation() throws IOException {
+    public void performTruncateQueryOperation(String tableName) throws IOException {
 
         String temp = "myFile2.txt";
 
-        File inputFile = new File( databaseName + '/' + tableName);
+        File inputFile = new File( databaseName + '/' + tableName + ".csv");
         File tempFile = new File( databaseName + '/' + temp);
 
         FileReader fileReader = new FileReader(inputFile);
@@ -23,10 +21,10 @@ public class TruncateQuery {
         BufferedWriter tableWriter = new BufferedWriter(fileWriter);
 
         String columnHeaders = tableReader.readLine();
-        System.out.println(columnHeaders);
         tableWriter.write(columnHeaders);
         tableWriter.close();
         inputFile.delete();
         tempFile.renameTo(inputFile);
+        System.out.println("Table values truncated");
     }
 }

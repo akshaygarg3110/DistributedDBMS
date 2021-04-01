@@ -105,10 +105,10 @@ public class TableValidations {
                     String foreignKeyColumnName = rowDetails.get(foreignKeyColumnNameIndex);
                     String foreignKeyTableName = rowDetails.get(foreignKeyTableIndex);
 
-                    String foreignKeyValue = inputFieldMap.get(columnName); //33
+                    String foreignKeyValue = inputFieldMap.get(columnName);
 
                     List<String> list = new ArrayList<String>();
-                    list.add(foreignKeyColumnName); // [Id]
+                    list.add(foreignKeyColumnName);
                     // TODO: foreignKeyTableName cannot have white spaces.
                     SelectQueryExecutor dependentSelectQueryExecutor = new SelectQueryExecutor(foreignKeyTableName + ".csv", databaseName);
                     dependentSelectQueryExecutor.setFieldList(list);
@@ -141,7 +141,7 @@ public class TableValidations {
             }
             for (int i = 0; i < columns.length; i++) {
                 System.out.println(dataTypeMap.get(columns[i]));
-                String dataType = (String) dataTypeMap.get(columns[i]);
+                String dataType = (String) dataTypeMap.get(columns[i]).trim();
                 checkDataTypeWithValues(dataType, values[i]);
             }
         }
@@ -177,4 +177,12 @@ public class TableValidations {
     public void checkIfTableNameValid(String tableName) {
 
     }
+
+    public static void main(String args[])
+    {
+        TableValidations tableValidations = new TableValidations("Schema", "DemoDB",
+                new String[] {"Id", "Name"}, new String[] {"1", "lastname"});
+        tableValidations.checkDataTypes();
+    }
 }
+
