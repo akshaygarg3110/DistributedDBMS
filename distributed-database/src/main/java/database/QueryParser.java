@@ -89,7 +89,11 @@ public class QueryParser {
         if (matcher.find()) {
             String operation = matcher.group(1);
             String tableName = matcher.group(2);
-            String[] columnNames = matcher.group(4).split(",");
+            String columnName = matcher.group(4);
+            String[] columnNames = null;
+            if(columnName != null) {
+            	columnNames = columnName.split(",");
+            }
             String[] columnValues = matcher.group(5).split(",");
 
             try {
