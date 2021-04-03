@@ -29,6 +29,8 @@ public class CreateTableQuery {
             out.newLine();
             out.flush();
             out.close();
+            RemoteFileHandler remoteFileHandler = new RemoteFileHandler("", "");
+            remoteFileHandler.uploadObject();
         } catch (Exception e) {
             System.out.println("Exception while writing into file");
         }
@@ -39,6 +41,9 @@ public class CreateTableQuery {
         if (!tableFile.exists()) {
             try {
                 tableFile.createNewFile();
+                RemoteFileHandler remoteFileHandler = new RemoteFileHandler(database, tableName);
+                remoteFileHandler.uploadObject();
+                tableFile.delete();
                 return true;
             } catch (IOException e) {
                 System.out.println(e);
@@ -54,6 +59,6 @@ public class CreateTableQuery {
     public static void main(String[] args) {
         System.out.println("Started");
         CreateTableQuery CreateTableQuery = new CreateTableQuery();
-        CreateTableQuery.createFileInFileSystem("test1", "file");
+        CreateTableQuery.createFileInFileSystem("faculty", "demo");
     }
 }
