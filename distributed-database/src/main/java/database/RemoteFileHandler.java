@@ -32,14 +32,22 @@ public class RemoteFileHandler {
     }
 
     void uploadObject() throws IOException {
-        String filePath = DEFAULT_DATABASE_ROOT_PATH + "/" + directoryName + "/" + fileName + ".txt";
+        String filePath;
+        String googleFilePath;
+        if (directoryName.equalsIgnoreCase(DEFAULT_DATABASE_ROOT_PATH)) {
+            filePath = DEFAULT_DATABASE_ROOT_PATH + "/" + fileName + ".txt";
+            googleFilePath = DEFAULT_DATABASE_ROOT_PATH + "/" + fileName;
+        } else {
+            filePath = DEFAULT_DATABASE_ROOT_PATH + "/" + directoryName + "/" + fileName + ".txt";
+            googleFilePath = DEFAULT_DATABASE_ROOT_PATH + "/" + directoryName + "/" + fileName;
+        }
         StorageOptions storageOptions = StorageOptions.newBuilder()
                 .setProjectId(GOOGLE_PROJECT_ID)
                 .setCredentials(GoogleCredentials.fromStream(new
                         FileInputStream("key.json"))).build();
         Storage storage = storageOptions.getService();
         BlobId blobId = BlobId.of(GOOGLE_BUCKET_NAME,
-                DEFAULT_DATABASE_ROOT_PATH + "/" + directoryName + "/" + fileName);
+                googleFilePath);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
         storage.create(blobInfo, Files.readAllBytes(Paths.get(filePath)));
     }

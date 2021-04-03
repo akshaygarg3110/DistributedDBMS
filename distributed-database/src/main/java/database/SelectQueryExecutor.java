@@ -11,6 +11,8 @@ import java.util.*;
 
 
 public class SelectQueryExecutor {
+
+    private static final String DATABASE_ROOT_PATH = "Database";
     private String tableName;
     private String databaseName;
     private List<String> lhsConstraint;
@@ -33,7 +35,7 @@ public class SelectQueryExecutor {
 
 
     BufferedReader getMetaReader() throws Exception {
-        String metaPath = this.databaseName + "/meta.txt";
+        String metaPath = DATABASE_ROOT_PATH + "/meta.txt";
         return new BufferedReader(new FileReader(metaPath));
     }
 
