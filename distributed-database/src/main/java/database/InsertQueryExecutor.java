@@ -19,7 +19,7 @@ public class InsertQueryExecutor {
     public void performInsertQueryOperation(String[] values) throws IOException
     {
         try {
-            File file = new File(databaseName + '/' + tableName + ".txt");
+            File file = new File("Database" + "/" + databaseName + '/' + tableName + ".txt");
             FileWriter fileWriter = new FileWriter(file, true);
             BufferedWriter tableWriter = new BufferedWriter(fileWriter);
             List<String> list = Arrays.asList(values);

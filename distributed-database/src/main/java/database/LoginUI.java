@@ -6,8 +6,7 @@ import org.apache.commons.lang3.StringUtils;
 
 public class LoginUI {
 
-	public void manageLoginUI() {
-		Scanner scanner = new Scanner(System.in);
+	public void manageLoginUI(Scanner scanner) {
 		boolean isLoginPassed = false;
 		while(isLoginPassed == false) {
 			isLoginPassed = createLoginUI(scanner);
@@ -16,7 +15,6 @@ public class LoginUI {
 			}
 		}
 		System.out.println("Successful login");
-		scanner.close();
 	}
 	
 	public boolean createLoginUI(Scanner scanner) {
@@ -34,9 +32,9 @@ public class LoginUI {
 		return login.verifyingCredentials(username, password);
 	}
 	
-	public static void main(String[] args) {
-		LoginUI loginUI = new LoginUI();
-		loginUI.manageLoginUI();
-	}
+//	public static void main(String[] args) {
+//		LoginUI loginUI = new LoginUI();
+//		loginUI.manageLoginUI();
+//	}
 	
 }

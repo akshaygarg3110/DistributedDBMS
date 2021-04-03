@@ -11,6 +11,8 @@ import java.util.*;
 
 
 public class SelectQueryExecutor {
+
+    private static final String DATABASE_ROOT_PATH = "Database";
     private String tableName;
     private String databaseName;
     private List<String> lhsConstraint;
@@ -33,7 +35,7 @@ public class SelectQueryExecutor {
 
 
     BufferedReader getMetaReader() throws Exception {
-        String metaPath = this.databaseName + "/meta.txt";
+        String metaPath = DATABASE_ROOT_PATH + "/meta.txt";
         return new BufferedReader(new FileReader(metaPath));
     }
 
@@ -64,15 +66,7 @@ public class SelectQueryExecutor {
         this.tableColumnsDataTypeMap = new HashMap<>();
         for (int i = 0; i < columnArray.length(); i++) {
             JSONObject columnDetail = new JSONObject(columnArray.get(i).toString());
-            DataType dataTypeOfColumn = new DBMSDataTypes().getDataType(columnDetail.getString("type"));
-            this.tableColumnsDataTypeMap.put(i, dataTypeOfColumn);
-        }
-    }
-
-    void convertArrayAttributesToDataTypeMap(String dataType) {
-        String[] columnArray = dataType.split("\\$");
-        for (int i = 0; i < columnArray.length; i++) {
-            DataType dataTypeOfColumn = new DBMSDataTypes().getDataType(columnArray[i]);
+            DataType dataTypeOfColumn = new DBMSDataTypes().getDataType(columnDetail.getString("columnType"));
             this.tableColumnsDataTypeMap.put(i, dataTypeOfColumn);
         }
     }
@@ -83,9 +77,9 @@ public class SelectQueryExecutor {
             String rows;
             String dataType = null;
             while ((rows = metaReader.readLine()) != null) {
-                String[] row = rows.split("\\$");
-                if (row[0].equalsIgnoreCase(this.tableName)) {
-                    dataType = row[1];
+                String[] row = rows.split("@@@@");
+                if (row[2].equalsIgnoreCase(this.tableName)) {
+                    dataType = row[4];
                     break;
                 }
             }
