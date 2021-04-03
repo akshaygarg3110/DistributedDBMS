@@ -240,9 +240,15 @@ public class QueryParser {
             }
             tableColumnsObject.put("columns", columnArray);
             tableForeignKeysObject.put("keys", foreignKeyArray);
-            CreateTableQuery createTableQuery = new CreateTableQuery();
-            createTableQuery.exceuteCreateTableQuery(QueryParser.databaseName, tableName, primaryKey,
-                    columns, tableColumnsObject, tableForeignKeysObject);
+            TableValidations taskValidation =
+                    new TableValidations(tableName, databaseName,columnDescArray, null );
+            if(taskValidation.checkIfTableNameValid(tableName)) {
+                CreateTableQuery createTableQuery = new CreateTableQuery();
+                createTableQuery.exceuteCreateTableQuery(QueryParser.databaseName, tableName, primaryKey,
+                        columns, tableColumnsObject, tableForeignKeysObject);
+            } else {
+                System.out.println("table already exists");
+            }
 
         } else {
             System.out.println("Query syntax is not correct, please check keywords spellings and order.");

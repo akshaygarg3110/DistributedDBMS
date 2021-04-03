@@ -239,8 +239,30 @@ public class TableValidations {
         return true;
     }
 
-    public void checkIfTableNameValid(String tableName) {
+    public boolean checkIfTableNameValid(String tableName) {
+        List<String> tableNames = getTableNames();
+        for(String table : tableNames) {
+            if (table.equalsIgnoreCase(tableName)) {
+                System.out.println("Table already exists");
+                return false;
+            }
+        }
+        return true;
+    }
 
+    private List<String> getTableNames() {
+        List<String> tableList = new ArrayList<>();
+        try {
+            BufferedReader metaReader = getMetaReader();
+            String rows;
+            while ((rows = metaReader.readLine()) != null) {
+                String[] row = rows.split("@@@");
+                tableList.add(row[2]);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return tableList;
     }
 
     public static void main(String args[]) {
