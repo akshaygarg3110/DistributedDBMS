@@ -3,7 +3,6 @@ package database;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import sun.tools.jconsole.Tab;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -19,7 +18,7 @@ public class QueryParser {
     public QueryParser() {
     }
 
-    public void parsingQuery(String query) {
+    public boolean parsingQuery(String query, boolean isTransaction) {
 
         if (query != null && query.trim().length() > 0) {
 
@@ -36,33 +35,35 @@ public class QueryParser {
                 String queryType = matcher.group();
                 System.out.println("Match found");
 
-                if (queryType.trim().equalsIgnoreCase("CREATE DATABASE")) {
+                if (queryType.trim().equalsIgnoreCase("CREATE DATABASE") && !isTransaction) {
                     tokenizeCreateDatabaseQuery(pattern, matcher, query);
-                } else if (queryType.trim().equalsIgnoreCase("USE DATABASE")) {
+                } else if (queryType.trim().equalsIgnoreCase("USE DATABASE") && !isTransaction) {
                     tokenizeUseDatabaseQuery(pattern, matcher, query);
                 } else if (StringUtils.isBlank(QueryParser.databaseName)) {
                     System.out.println("Please specify database");
-                } else if (queryType.trim().equalsIgnoreCase("SELECT")) {
+                } else if (queryType.trim().equalsIgnoreCase("SELECT") && !isTransaction) {
                     tokenizeSelectQuery(pattern, matcher, query);
                 } else if (queryType.trim().equalsIgnoreCase("UPDATE")) {
-                    tokenizeUpdateQuery(pattern, matcher, query);
+                    tokenizeUpdateQuery(pattern, matcher, query, isTransaction);
                 } else if (queryType.trim().equalsIgnoreCase("INSERT")) {
-                    tokenizeInsertQuery(pattern, matcher, query);
+                    tokenizeInsertQuery(pattern, matcher, query, isTransaction);
                 } else if (queryType.trim().equalsIgnoreCase("DELETE")) {
-                    tokenizeDeleteQuery(pattern, matcher, query);
-                } else if (queryType.trim().equalsIgnoreCase("CREATE TABLE")) {
+                    tokenizeDeleteQuery(pattern, matcher, query, isTransaction);
+                } else if (queryType.trim().equalsIgnoreCase("CREATE TABLE") && !isTransaction) {
                     tokenizeCreateTableQuery(pattern, matcher, query);
-                } else if (queryType.trim().equalsIgnoreCase("BEGIN TRANSACTION")) {
+                } else if (queryType.trim().equalsIgnoreCase("BEGIN TRANSACTION") && !isTransaction) {
                     tokenizeTransactionQuery(pattern, matcher, query);
-                } else if (queryType.trim().equalsIgnoreCase("DROP TABLE")){
+                } else if (queryType.trim().equalsIgnoreCase("DROP TABLE") && !isTransaction) {
                     tokenizeDropQuery(pattern, matcher, query);
-                } else if (queryType.trim().equalsIgnoreCase("TRUNCATE TABLE")){
+                } else if (queryType.trim().equalsIgnoreCase("TRUNCATE TABLE") && !isTransaction) {
                     tokenizeTruncateQuery(pattern, matcher, query);
                 }
             } else {
                 System.out.println("Query syntax is not correct, please check keywords spellings and order.");
+                return false;
             }
         }
+        return true;
     }
 
     private void tokenizeTransactionQuery(Pattern pattern, Matcher matcher, String query) {
@@ -72,7 +73,9 @@ public class QueryParser {
             String line = "";
             while (!line.equalsIgnoreCase("END")) {
                 line = in.readLine();
-                transactionManager.addTransaction(line);
+                if (parsingQuery(line, true)) {
+                    transactionManager.addTransaction(line);
+                }
             }
             in.close();
             transactionManager.endAndExecuteTransaction();
@@ -82,7 +85,7 @@ public class QueryParser {
         }
     }
 
-    private void tokenizeInsertQuery(Pattern pattern, Matcher matcher, String query) {
+    private void tokenizeInsertQuery(Pattern pattern, Matcher matcher, String query, boolean isTransaction) {
         pattern = Pattern.compile(
                 "(INSERT)\\s+INTO\\s+([\\w]+)\\s*(\\(([\\w, ]+)\\))?\\s*\\s+VALUES\\s+\\(([\\w, ]+)\\)$",
                 Pattern.CASE_INSENSITIVE);
@@ -93,8 +96,8 @@ public class QueryParser {
             String tableName = matcher.group(2);
             String columnName = matcher.group(4);
             String[] columnNames = null;
-            if(columnName != null) {
-            	columnNames = columnName.split(",");
+            if (columnName != null) {
+                columnNames = columnName.split(",");
             }
             String[] columnValues = matcher.group(5).split(",");
 
@@ -102,13 +105,16 @@ public class QueryParser {
             System.out.println(Arrays.asList(columnValues));
 
             try {
-                    TableValidations tableValidations = new TableValidations("Schema",databaseName,columnNames,columnValues);
-                    if(tableValidations.checkPrimaryKey(tableName) && tableValidations.checkForeignKey(tableName) && tableValidations.checkDataTypes()) {
-                        InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor(tableName, databaseName);
-                        insertQueryExecutor.performInsertQueryOperation(columnValues);
-                    }
+                TableValidations tableValidations = new TableValidations("Schema", databaseName, columnNames, columnValues);
+                if (tableValidations.checkPrimaryKey(tableName)
+                        && tableValidations.checkForeignKey(tableName)
+                        && tableValidations.checkDataTypes() && !isTransaction) {
+                    InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor(tableName, databaseName);
+                    insertQueryExecutor.performInsertQueryOperation(columnValues);
+                } else {
+                    System.out.println("Constraint error");
                 }
-            catch(IOException e){
+            } catch (IOException e) {
                 System.out.println("Cannot write to database" + e.getMessage());
                 e.getStackTrace();
             }
@@ -118,7 +124,7 @@ public class QueryParser {
         }
     }
 
-    private void tokenizeDeleteQuery(Pattern pattern, Matcher matcher, String query) {
+    private void tokenizeDeleteQuery(Pattern pattern, Matcher matcher, String query, boolean isTransaction) {
         pattern = Pattern.compile("(DELETE)\\s+FROM\\s+([\\w]+)\\s* WHERE\\s+(([\\S]+))?$", Pattern.CASE_INSENSITIVE);
         matcher = pattern.matcher(query);
 
@@ -126,8 +132,10 @@ public class QueryParser {
             String operation = matcher.group(1);
             String tableName = matcher.group(2);
             String conditions = matcher.group(3);
-            DeleteQueryExecutor deleteQueryExecutor = new DeleteQueryExecutor(tableName, databaseName);
-            deleteQueryExecutor.splitCondition(conditions);
+            if (!isTransaction) {
+                DeleteQueryExecutor deleteQueryExecutor = new DeleteQueryExecutor(tableName, databaseName);
+                deleteQueryExecutor.splitCondition(conditions);
+            }
         } else {
             System.out.println("Query syntax is not correct, please check keywords spellings and order.");
         }
@@ -150,7 +158,7 @@ public class QueryParser {
         }
     }
 
-    private void tokenizeUpdateQuery(Pattern pattern, Matcher matcher, String query) {
+    private void tokenizeUpdateQuery(Pattern pattern, Matcher matcher, String query, boolean isTransaction) {
         pattern = Pattern.compile("(UPDATE)\\s+([\\w]+)\\s+SET\\s+([\\S]+)\\s*( WHERE\\s+([\\S]+))?$",
                 Pattern.CASE_INSENSITIVE);
         matcher = pattern.matcher(query);
@@ -160,8 +168,10 @@ public class QueryParser {
             String tableName = matcher.group(2);
             String updateOperations = matcher.group(3);
             String conditions = matcher.group(5);
-            UpdateQueryExecutor uqe = new UpdateQueryExecutor(tableName, databaseName);
-            uqe.executeUpdateMain(updateOperations, conditions);
+            if (!isTransaction) {
+                UpdateQueryExecutor uqe = new UpdateQueryExecutor(tableName, databaseName);
+                uqe.executeUpdateMain(updateOperations, conditions);
+            }
         } else {
             System.out.println("Query syntax is not correct, please check keywords spellings and order.");
         }
@@ -259,8 +269,7 @@ public class QueryParser {
         }
     }
 
-    private void tokenizeDropQuery(Pattern pattern, Matcher matcher, String query)
-    {
+    private void tokenizeDropQuery(Pattern pattern, Matcher matcher, String query) {
         pattern = Pattern.compile("(DROP)\\s+(TABLE)\\s+([\\w]+)\\s*$", Pattern.CASE_INSENSITIVE);
         matcher = pattern.matcher(query);
 
@@ -269,7 +278,7 @@ public class QueryParser {
             try {
                 DropQueryExecutor dropQueryExecutor = new DropQueryExecutor(databaseName);
                 dropQueryExecutor.performDropQueryOperation(tableName);
-            } catch(IOException e) {
+            } catch (IOException e) {
                 System.out.println("Cannot DROP table" + e.getMessage());
                 e.getStackTrace();
             }
@@ -278,8 +287,7 @@ public class QueryParser {
         }
     }
 
-    private void tokenizeTruncateQuery(Pattern pattern, Matcher matcher, String query)
-    {
+    private void tokenizeTruncateQuery(Pattern pattern, Matcher matcher, String query) {
         pattern = Pattern.compile("(TRUNCATE)\\s+(TABLE)\\s+([\\w]+)\\s*$", Pattern.CASE_INSENSITIVE);
         matcher = pattern.matcher(query);
 
@@ -288,7 +296,7 @@ public class QueryParser {
             try {
                 TruncateQueryExecutor truncateQueryExecutor = new TruncateQueryExecutor(databaseName);
                 truncateQueryExecutor.performTruncateQueryOperation(tableName);
-            } catch(IOException e) {
+            } catch (IOException e) {
                 System.out.println("Cannot TRUNCATE table" + e.getMessage());
                 e.getStackTrace();
             }
@@ -300,11 +308,11 @@ public class QueryParser {
     public static void main(String[] args) {
         QueryParser parser = new QueryParser();
         String query = "USE DATABASE DemoDB";
-        parser.parsingQuery(query);
+        parser.parsingQuery(query, false);
         query = "INSERT INTO Demo(Id,Name,Age,Married,DepartmentId,VehicleId) VALUES (1,jay,20,false,4,4)";
         //query = "DELETE FROM Demo WHERE Id!=1";
         //query = "TRUNCATE TABLE Demo";
         //query = "DROP TABLE Demo";
-        parser.parsingQuery(query);
+        parser.parsingQuery(query, false);
     }
 }

@@ -52,7 +52,7 @@ public class TransactionManager {
             List<String> queryToBeExecutedList = queryThatIsExecutedInTransaction(transactionList);
             QueryParser qp = new QueryParser();
             for (String query : queryToBeExecutedList) {
-                qp.parsingQuery(query);
+                qp.parsingQuery(query, false);
             }
             File file =  new File(filePath);
             file.delete();
