@@ -198,6 +198,7 @@ public class QueryParser {
 
             String[] columnDescArray = columnsDesc.split(",");
 
+            List<String> columns = new ArrayList<String>();
             JSONObject tableColumnsObject = new JSONObject();
             JSONObject tableForeignKeysObject = new JSONObject();
             String primaryKey = null;
@@ -221,6 +222,7 @@ public class QueryParser {
                     String foreignKeyColumn = matcher.group(5);
 
                     columnObj.put("columnName", columnName.trim());
+                    columns.add(columnName.trim());
                     columnObj.put("columnType", columnType.trim());
                     columnArray.add(columnObj);
 
