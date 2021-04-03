@@ -59,6 +59,7 @@ public class CreateTableQuery {
                 Random rand = new Random();
                 int num = rand.nextInt();
                 
+                
                 if(num % 2 == 0) {
                 	RemoteFileHandler remoteFileHandler = new RemoteFileHandler(database, tableName);
                     remoteFileHandler.uploadObject();
