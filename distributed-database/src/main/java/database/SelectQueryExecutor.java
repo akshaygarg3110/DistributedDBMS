@@ -40,7 +40,7 @@ public class SelectQueryExecutor {
     }
 
     BufferedReader getTableReader() throws Exception {
-        String tablePath = this.databaseName + '/' + this.tableName + ".txt";
+        String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
         return new BufferedReader(new FileReader(tablePath));
     }
 
@@ -77,7 +77,7 @@ public class SelectQueryExecutor {
             String rows;
             String dataType = null;
             while ((rows = metaReader.readLine()) != null) {
-                String[] row = rows.split("@@@@");
+                String[] row = rows.split("@@@");
                 if (row[2].equalsIgnoreCase(this.tableName)) {
                     dataType = row[4];
                     break;

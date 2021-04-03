@@ -1,9 +1,18 @@
 package database;
 
-import java.io.*;
-import java.util.*;
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.FileReader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class TableValidations {
+
+    private static final String DATABASE_ROOT_PATH = "Database";
     private String tableName;
     private String databaseName;
     private String[] columns;
@@ -22,8 +31,32 @@ public class TableValidations {
     }
 
     BufferedReader getTableReader() throws Exception {
-        String tablePath = this.databaseName + '/' + this.tableName + ".txt";
+        String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
         return new BufferedReader(new FileReader(tablePath));
+    }
+
+    BufferedReader getMetaReader() throws Exception {
+        String metaPath = DATABASE_ROOT_PATH + "/meta.txt";
+        return new BufferedReader(new FileReader(metaPath));
+    }
+
+
+    public String[] getColumns() {
+        try {
+            BufferedReader metaReader = getMetaReader();
+            String rows;
+            System.out.println(tableName);
+            while ((rows = metaReader.readLine()) != null) {
+                String[] row = rows.split("@@@");
+                if (row[2].equalsIgnoreCase(this.tableName)) {
+                    System.out.println(row);
+                    return row;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     public void populateColumnMap() {
@@ -60,15 +93,14 @@ public class TableValidations {
 
         // position of primary_key column in schema file
         int indexOfKey = getIndexOfKeyName("primary_key");
+        String columnName = getPrimaryKey();
         // looping the schema table records
         for (Map.Entry<Integer, List<String>> rows : resultSet.entrySet()) {
             try {
                 List<String> rowDetails = rows.getValue();
-                if (Boolean.parseBoolean(rowDetails.get(indexOfKey))) {
-                    int columnNameIndex = getIndexOfKeyName("column_name");
-                    String columnName = rowDetails.get(columnNameIndex);
+                if (columnName != null) {
                     SelectQueryExecutor selectQueryExecutorActual = new SelectQueryExecutor(actualTableName, databaseName);
-                    List<String> list = new ArrayList<String>();
+                    List<String> list = new ArrayList<>();
                     list.add(columnName);
                     selectQueryExecutorActual.setFieldList(list);
                     Map<Integer, List<String>> resultSetActual = selectQueryExecutorActual.executeSelectStatementWithColumnList();
@@ -85,41 +117,65 @@ public class TableValidations {
         return true;
     }
 
+    private String getPrimaryKey() {
+        if (getColumns() != null) {
+            return getColumns()[3];
+        }
+        return null;
+    }
+
+    private String getForeignKey() {
+        if (getColumns() != null) {
+            return getColumns()[5];
+        }
+        return null;
+    }
+
     public boolean checkForeignKey(String actualTable) {
         SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(tableName, databaseName);
         Map<Integer, List<String>> resultSet = selectQueryExecutor.executeSelectStatementWithFullColumns();
 
-        int indexOfKey = getIndexOfKeyName("foreign_key");
-        for (Map.Entry<Integer, List<String>> rows : resultSet.entrySet()) {
-            try {
-                List<String> rowDetails = rows.getValue();
-                if (Boolean.parseBoolean(rowDetails.get(indexOfKey))) {
-                    int columnNameIndex = getIndexOfKeyName("column_name");
-                    int foreignKeyColumnNameIndex = getIndexOfKeyName("foreign_key_column_name");
-                    int foreignKeyTableIndex = getIndexOfKeyName("foreign_key_table_name");
+        String foreignKey = getForeignKey();
+        if (foreignKey != null) {
+            JSONObject foreignKeyObj = new JSONObject(foreignKey);
+            int indexOfKey = getIndexOfKeyName("foreign_key");
+            JSONArray foreignKeyArrays = new JSONArray(foreignKeyObj.get("keys").toString());
+            for (int fk = 0; fk < foreignKeyArrays.length(); fk++) {
+                JSONObject foreignKeyConstraintObj = new JSONObject(foreignKeyArrays.get(fk).toString());
+                String columnName = foreignKeyConstraintObj.getString("columns");
+                String foreignKeyColumnName = foreignKeyConstraintObj.getString("foreignKeyColumn");
+                String foreignKeyTableName = foreignKeyConstraintObj.getString("foreignKeyTable");
+                for (Map.Entry<Integer, List<String>> rows : resultSet.entrySet()) {
+                    try {
+                        List<String> rowDetails = rows.getValue();
+                        if (Boolean.parseBoolean(rowDetails.get(indexOfKey))) {
+                            int columnNameIndex = getIndexOfKeyName("column_name");
+                            int foreignKeyColumnNameIndex = getIndexOfKeyName("foreign_key_column_name");
+                            int foreignKeyTableIndex = getIndexOfKeyName("foreign_key_table_name");
+                            String foreignKeyValue = inputFieldMap.get(columnName);
 
-                    String columnName = rowDetails.get(columnNameIndex);
-                    String foreignKeyColumnName = rowDetails.get(foreignKeyColumnNameIndex);
-                    String foreignKeyTableName = rowDetails.get(foreignKeyTableIndex);
+                            List<String> list = new ArrayList<String>();
+                            list.add(foreignKeyColumnName);
+                            // TODO: foreignKeyTableName cannot have white spaces.
+                            SelectQueryExecutor dependentSelectQueryExecutor = new SelectQueryExecutor(foreignKeyTableName, databaseName);
+                            dependentSelectQueryExecutor.setFieldList(list);
+                            Map<Integer, List<String>> dependentResultSet = dependentSelectQueryExecutor.executeSelectStatementWithColumnList();
 
-                    String foreignKeyValue = inputFieldMap.get(columnName);
-
-                    List<String> list = new ArrayList<String>();
-                    list.add(foreignKeyColumnName);
-                    // TODO: foreignKeyTableName cannot have white spaces.
-                    SelectQueryExecutor dependentSelectQueryExecutor = new SelectQueryExecutor(foreignKeyTableName,databaseName);
-                    dependentSelectQueryExecutor.setFieldList(list);
-                    Map<Integer, List<String>> dependentResultSet = dependentSelectQueryExecutor.executeSelectStatementWithColumnList();
-
-                    for (List<String> i : dependentResultSet.values()) {
-                        if (i.get(0).equals(foreignKeyValue)) {
-                            System.out.println("Good to insert");
-                            return true;
+                            for (List<String> i : dependentResultSet.values()) {
+                                if (i.get(0).equals(foreignKeyValue)) {
+                                    System.out.println("Good to insert");
+                                    return true;
+                                }
+                            }
                         }
+                    } catch (ArrayIndexOutOfBoundsException e) {
+                        System.out.println("Foreign key violation");
                     }
                 }
-            } catch (ArrayIndexOutOfBoundsException e) {
             }
+        } else {
+            System.out.println("No foreign key constraint");
+            return true;
         }
         System.out.println("Foreign key violation");
         return false;
@@ -143,8 +199,7 @@ public class TableValidations {
             for (int i = 0; i < columns.length; i++) {
                 String dataType = (String) dataTypeMap.get(columns[i]).trim();
                 result = checkDataTypeWithValues(dataType, values[i]);
-                if(result == false)
-                {
+                if (result == false) {
                     break;
                 }
             }
@@ -188,11 +243,10 @@ public class TableValidations {
 
     }
 
-    public static void main(String args[])
-    {
-        TableValidations tableValidations = new TableValidations("Schema", "DemoDB",
-                new String[] {"Id", "Name"}, new String[] {"1", "lastname"});
-        tableValidations.checkPrimaryKey("Demo");
+    public static void main(String args[]) {
+        TableValidations tableValidations = new TableValidations("students", "test",
+                new String[]{"Id", "Name"}, new String[]{"1", "lastname"});
+        tableValidations.checkPrimaryKey("students");
     }
 }
 

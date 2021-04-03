@@ -3,7 +3,6 @@ package database;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
-import sun.tools.jconsole.Tab;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -13,10 +12,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
 
 
 public class QueryParser {
@@ -247,7 +242,7 @@ public class QueryParser {
             tableForeignKeysObject.put("keys", foreignKeyArray);
             CreateTableQuery createTableQuery = new CreateTableQuery();
             createTableQuery.exceuteCreateTableQuery(QueryParser.databaseName, tableName, primaryKey,
-            		columns, tableColumnsObject, tableForeignKeysObject);
+                    columns, tableColumnsObject, tableForeignKeysObject);
 
         } else {
             System.out.println("Query syntax is not correct, please check keywords spellings and order.");
