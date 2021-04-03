@@ -1,0 +1,7 @@
+/target/
+.classpath
+.project
+distributed-database.iml
+.idea/*
+/.settings
+/Database
