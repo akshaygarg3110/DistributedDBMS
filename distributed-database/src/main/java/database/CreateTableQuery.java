@@ -1,59 +1,72 @@
 package database;
 
-import org.json.simple.JSONObject;
-
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.Random;
+
+import org.json.simple.JSONObject;
 
 public class CreateTableQuery {
 
     public void exceuteCreateTableQuery(String database, String tableName, String primaryKey,
                                         JSONObject tableColumnsObject, JSONObject tableForeignKeysObject) {
-        boolean isFileCreated = createFileInFileSystem(database, tableName);
-        if (isFileCreated) {
-            createRecordInMetaDataFile(database, tableName, primaryKey, tableColumnsObject, tableForeignKeysObject);
+        String server = createFileInFileSystem(database, tableName);
+        if (server.trim().equalsIgnoreCase("remote") || server.trim().equalsIgnoreCase("local")) {
+            createRecordInMetaDataFile(server, database, tableName, primaryKey, tableColumnsObject, tableForeignKeysObject);
         }
     }
 
-    private void createRecordInMetaDataFile(String database, String tableName, String primaryKey,
+    private void createRecordInMetaDataFile(String server, String database, String tableName, String primaryKey,
                                             JSONObject tableColumnsObject, JSONObject tableForeignKeysObject) {
         try {
-            File f = new File("meta.txt");
+            File f = new File("Database\\" + "meta.txt");
             FileWriter fstream = new FileWriter(f, true);
             BufferedWriter out = new BufferedWriter(fstream);
-            String s = database + "@@@" + tableName + "@@@" + primaryKey + "@@@" + tableColumnsObject.toJSONString()
+            String s = server + "@@@" + database + "@@@" + tableName + "@@@" + primaryKey + "@@@" + tableColumnsObject.toJSONString()
                     + "@@@" + tableForeignKeysObject.toJSONString();
             out.write(s);
             out.newLine();
             out.flush();
             out.close();
-            RemoteFileHandler remoteFileHandler = new RemoteFileHandler("", "");
+            
+            RemoteFileHandler remoteFileHandler = new RemoteFileHandler("Database", "meta");
             remoteFileHandler.uploadObject();
         } catch (Exception e) {
             System.out.println("Exception while writing into file");
         }
     }
 
-    private boolean createFileInFileSystem(String database, String tableName) {
+    private String createFileInFileSystem(String database, String tableName) {
+    	String server = "";
         File tableFile = new File("Database\\" + database + "\\" + tableName + ".txt");
         if (!tableFile.exists()) {
             try {
                 tableFile.createNewFile();
-                RemoteFileHandler remoteFileHandler = new RemoteFileHandler(database, tableName);
-                remoteFileHandler.uploadObject();
-                tableFile.delete();
-                return true;
+                
+                Random rand = new Random();
+                int num = rand.nextInt();
+                
+                if(num % 2 == 0) {
+                	RemoteFileHandler remoteFileHandler = new RemoteFileHandler(database, tableName);
+                    remoteFileHandler.uploadObject();
+                	tableFile.delete();
+                	server = "remote";
+                } else {
+                	server = "local";
+                }
+           
+               
             } catch (IOException e) {
                 System.out.println(e);
                 System.out.println("Exception while persisting data. Please contact admin.");
-                return false;
+                
             }
         } else {
             System.out.println("Table already exists");
-            return false;
         }
+        return server;
     }
 
     public static void main(String[] args) {
