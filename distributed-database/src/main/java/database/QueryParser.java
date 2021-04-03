@@ -1,5 +1,6 @@
 package database;
 
+<<<<<<< HEAD
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -9,8 +10,20 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
+=======
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+>>>>>>> ce3f9c8 (Committing my changes)
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.apache.commons.lang3.StringUtils;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
 
 public class QueryParser {
 
@@ -180,6 +193,7 @@ public class QueryParser {
 
             String[] columnDescArray = columnsDesc.split(",");
 
+            List<String> columns = new ArrayList<String>();
             JSONObject tableColumnsObject = new JSONObject();
             JSONObject tableForeignKeysObject = new JSONObject();
             String primaryKey = null;
@@ -203,6 +217,7 @@ public class QueryParser {
                     String foreignKeyColumn = matcher.group(5);
 
                     columnObj.put("columnName", columnName.trim());
+                    columns.add(columnName.trim());
                     columnObj.put("columnType", columnType.trim());
                     columnArray.add(columnObj);
 
@@ -227,7 +242,7 @@ public class QueryParser {
             tableForeignKeysObject.put("keys", foreignKeyArray);
             CreateTableQuery createTableQuery = new CreateTableQuery();
             createTableQuery.exceuteCreateTableQuery(QueryParser.databaseName, tableName, primaryKey,
-                    tableColumnsObject, tableForeignKeysObject);
+            		columns, tableColumnsObject, tableForeignKeysObject);
 
         } else {
             System.out.println("Query syntax is not correct, please check keywords spellings and order.");
