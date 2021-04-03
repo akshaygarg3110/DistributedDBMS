@@ -22,7 +22,7 @@ public class UpdateQueryExecutor {
     }
 
     BufferedReader getTableReader() throws Exception {
-        String tablePath = this.databaseName + '/' + this.tableName + ".txt";
+        String tablePath = "Database" + "/" + this.databaseName + '/' + this.tableName + ".txt";
         return new BufferedReader(new FileReader(tablePath));
     }
 

@@ -111,7 +111,7 @@ public class QueryParser {
     }
 
     private void tokenizeDeleteQuery(Pattern pattern, Matcher matcher, String query) {
-        pattern = Pattern.compile("(DELETE)\\s+FROM\\s+([\\w]+)\\s* WHERE\\s+((\\S)+)?$", Pattern.CASE_INSENSITIVE);
+        pattern = Pattern.compile("(DELETE)\\s+FROM\\s+([\\w]+)\\s* WHERE\\s+(([\\S]+))?$", Pattern.CASE_INSENSITIVE);
         matcher = pattern.matcher(query);
 
         if (matcher.find()) {
@@ -126,7 +126,7 @@ public class QueryParser {
     }
 
     private void tokenizeSelectQuery(Pattern pattern, Matcher matcher, String query) {
-        pattern = Pattern.compile("(SELECT)\\s+(\\*|[\\w, ]+)\\s+FROM\\s+([\\w]+)\\s*( WHERE\\s+(\\S)+)?$",
+        pattern = Pattern.compile("(SELECT)\\s+(\\*|[\\w, ]+)\\s+FROM\\s+([\\w]+)\\s*( WHERE\\s+([\\S]+))?$",
                 Pattern.CASE_INSENSITIVE);
         matcher = pattern.matcher(query);
 
@@ -143,14 +143,14 @@ public class QueryParser {
     }
 
     private void tokenizeUpdateQuery(Pattern pattern, Matcher matcher, String query) {
-        pattern = Pattern.compile("(UPDATE)\\s+([\\w]+)\\s+SET\\s+(.+)\\s*( WHERE\\s+(\\S)+)?$",
+        pattern = Pattern.compile("(UPDATE)\\s+([\\w]+)\\s+SET\\s+([\\S]+)\\s*( WHERE\\s+([\\S]+))?$",
                 Pattern.CASE_INSENSITIVE);
         matcher = pattern.matcher(query);
 
         if (matcher.find()) {
             String operation = matcher.group(1);
             String tableName = matcher.group(2);
-            String updateOperations = matcher.group(2);
+            String updateOperations = matcher.group(3);
             String conditions = matcher.group(5);
             UpdateQueryExecutor uqe = new UpdateQueryExecutor(tableName, databaseName);
             uqe.executeUpdateMain(updateOperations, conditions);
