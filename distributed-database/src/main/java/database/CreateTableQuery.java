@@ -4,15 +4,16 @@ import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.List;
 import java.util.Random;
 
 import org.json.simple.JSONObject;
 
 public class CreateTableQuery {
 
-    public void exceuteCreateTableQuery(String database, String tableName, String primaryKey,
+    public void exceuteCreateTableQuery(String database, String tableName, String primaryKey, List<String> columns,
                                         JSONObject tableColumnsObject, JSONObject tableForeignKeysObject) {
-        String server = createFileInFileSystem(database, tableName);
+        String server = createFileInFileSystem(columns,database, tableName);
         if (server.trim().equalsIgnoreCase("remote") || server.trim().equalsIgnoreCase("local")) {
             createRecordInMetaDataFile(server, database, tableName, primaryKey, tableColumnsObject, tableForeignKeysObject);
         }
@@ -38,15 +39,26 @@ public class CreateTableQuery {
         }
     }
 
-    private String createFileInFileSystem(String database, String tableName) {
+    private String createFileInFileSystem(List<String> columns, String database, String tableName) {
     	String server = "";
         File tableFile = new File("Database\\" + database + "\\" + tableName + ".txt");
         if (!tableFile.exists()) {
             try {
-                tableFile.createNewFile();
+            	FileWriter fstream = new FileWriter(tableFile, true);
+                BufferedWriter out = new BufferedWriter(fstream);
+                String s = "";
+                for (String string : columns) {
+					s = s + string + "$"; 
+				}
+                s = s.substring(0, s.length() -1);
+                out.write(s);
+                out.newLine();
+                out.flush();
+                out.close();
                 
                 Random rand = new Random();
                 int num = rand.nextInt();
+                
                 
                 if(num % 2 == 0) {
                 	RemoteFileHandler remoteFileHandler = new RemoteFileHandler(database, tableName);
@@ -56,12 +68,10 @@ public class CreateTableQuery {
                 } else {
                 	server = "local";
                 }
-           
-               
+                  
             } catch (IOException e) {
                 System.out.println(e);
-                System.out.println("Exception while persisting data. Please contact admin.");
-                
+                System.out.println("Exception while persisting data. Please contact admin."); 
             }
         } else {
             System.out.println("Table already exists");
@@ -69,9 +79,4 @@ public class CreateTableQuery {
         return server;
     }
 
-    public static void main(String[] args) {
-        System.out.println("Started");
-        CreateTableQuery CreateTableQuery = new CreateTableQuery();
-        CreateTableQuery.createFileInFileSystem("faculty", "demo");
-    }
 }
