@@ -1,11 +1,7 @@
 package database;
 
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.io.*;
+import java.util.*;
 
 public class TableValidations {
     private String tableName;
@@ -57,7 +53,7 @@ public class TableValidations {
         return -1;
     }
 
-    public void checkPrimaryKey(String actualTableName) {
+    public boolean checkPrimaryKey(String actualTableName) {
         // selecting all records of Schema table
         SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(tableName, databaseName);
         Map<Integer, List<String>> resultSet = selectQueryExecutor.executeSelectStatementWithFullColumns();
@@ -78,17 +74,18 @@ public class TableValidations {
                     Map<Integer, List<String>> resultSetActual = selectQueryExecutorActual.executeSelectStatementWithColumnList();
                     for (List<String> i : resultSetActual.values()) {
                         if (i.get(0).equals(inputFieldMap.get(columnName))) {
-                            System.out.println("Primary Key Violation, value already exists!!!");
+                            System.out.println("Returning false");
+                            return false;
                         }
                     }
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
-
             }
         }
+        return true;
     }
 
-    public void checkForeignKey(String actualTable) {
+    public boolean checkForeignKey(String actualTable) {
         SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(tableName, databaseName);
         Map<Integer, List<String>> resultSet = selectQueryExecutor.executeSelectStatementWithFullColumns();
 
@@ -110,24 +107,28 @@ public class TableValidations {
                     List<String> list = new ArrayList<String>();
                     list.add(foreignKeyColumnName);
                     // TODO: foreignKeyTableName cannot have white spaces.
-                    SelectQueryExecutor dependentSelectQueryExecutor = new SelectQueryExecutor(foreignKeyTableName + ".csv", databaseName);
+                    SelectQueryExecutor dependentSelectQueryExecutor = new SelectQueryExecutor(foreignKeyTableName,databaseName);
                     dependentSelectQueryExecutor.setFieldList(list);
                     Map<Integer, List<String>> dependentResultSet = dependentSelectQueryExecutor.executeSelectStatementWithColumnList();
 
                     for (List<String> i : dependentResultSet.values()) {
                         if (i.get(0).equals(foreignKeyValue)) {
-                            System.out.println("Foreign Key Exists, good to insert!!");
+                            System.out.println("Good to insert");
+                            return true;
                         }
                     }
                 }
             } catch (ArrayIndexOutOfBoundsException e) {
             }
         }
+        System.out.println("Foreign key violation");
+        return false;
     }
 
-    public void checkDataTypes() {
+    public boolean checkDataTypes() {
         SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(tableName, databaseName);
         Map<Integer, List<String>> resultSet = selectQueryExecutor.executeSelectStatementWithFullColumns();
+        boolean result = false;
         if (validateColumnCount(columns, values)) {
             Map<String, String> dataTypeMap = new HashMap<>();
             for (Map.Entry<Integer, List<String>> rows : resultSet.entrySet()) {
@@ -140,19 +141,26 @@ public class TableValidations {
                 }
             }
             for (int i = 0; i < columns.length; i++) {
-                System.out.println(dataTypeMap.get(columns[i]));
                 String dataType = (String) dataTypeMap.get(columns[i]).trim();
-                checkDataTypeWithValues(dataType, values[i]);
+                result = checkDataTypeWithValues(dataType, values[i]);
+                if(result == false)
+                {
+                    break;
+                }
             }
         }
+        return result;
     }
 
-    public void checkDataTypeWithValues(String dataType, String value) {
+    public boolean checkDataTypeWithValues(String dataType, String value) {
         String stripDataType = dataType.replaceAll("\\s+", "");
         String stripValue = value.replaceAll("\\s+", "");
+        System.out.println(dataType);
+        System.out.println(stripValue);
         if (dataType.equals("String")) {
             if (stripValue.length() == 0) {
                 System.out.println("Empty String");
+                return false;
             }
         } else if (stripDataType.equals("Integer")) {
             Integer i = Integer.parseInt(stripValue);
@@ -162,8 +170,10 @@ public class TableValidations {
             if (stripValue.equals("true") || stripValue.equals("false")) {
             } else {
                 System.out.println("Not a boolean!");
+                return false;
             }
         }
+        return true;
     }
 
     public boolean validateColumnCount(String[] columns, String[] values) {
@@ -182,7 +192,7 @@ public class TableValidations {
     {
         TableValidations tableValidations = new TableValidations("Schema", "DemoDB",
                 new String[] {"Id", "Name"}, new String[] {"1", "lastname"});
-        tableValidations.checkDataTypes();
+        tableValidations.checkPrimaryKey("Demo");
     }
 }
 

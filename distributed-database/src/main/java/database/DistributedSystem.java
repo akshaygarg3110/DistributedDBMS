@@ -36,7 +36,7 @@ public class DistributedSystem {
     }
     public static void main(String[] args){
         DistributedSystem ds = new DistributedSystem();
-        ds.distributedDatabaseActivity("Persons_2");
+        ds.distributedDatabaseActivity("Persons_1");
     }
 }
 

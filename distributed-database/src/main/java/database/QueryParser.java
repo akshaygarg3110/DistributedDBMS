@@ -3,10 +3,12 @@ package database;
 import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import sun.tools.jconsole.Tab;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -92,10 +94,16 @@ public class QueryParser {
             String[] columnNames = matcher.group(4).split(",");
             String[] columnValues = matcher.group(5).split(",");
 
+            System.out.println(Arrays.asList(columnNames));
+            System.out.println(Arrays.asList(columnValues));
+
             try {
-                InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor(tableName, databaseName);
-                insertQueryExecutor.performInsertQueryOperation(columnValues);
-            }
+                    TableValidations tableValidations = new TableValidations("Schema",databaseName,columnNames,columnValues);
+                    if(tableValidations.checkPrimaryKey(tableName) && tableValidations.checkForeignKey(tableName) && tableValidations.checkDataTypes()) {
+                        InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor(tableName, databaseName);
+                        insertQueryExecutor.performInsertQueryOperation(columnValues);
+                    }
+                }
             catch(IOException e){
                 System.out.println("Cannot write to database" + e.getMessage());
                 e.getStackTrace();
@@ -289,8 +297,8 @@ public class QueryParser {
         QueryParser parser = new QueryParser();
         String query = "USE DATABASE DemoDB";
         parser.parsingQuery(query);
-        //query = "INSERT INTO Department(Id,Name) VALUES (4,Pilot)";
-        query = "DELETE FROM Demo WHERE DepartmentId=13";
+        query = "INSERT INTO Demo(Id,Name,Age,Married,DepartmentId,VehicleId) VALUES (1,jay,20,false,4,4)";
+        //query = "DELETE FROM Demo WHERE Id!=1";
         //query = "TRUNCATE TABLE Demo";
         //query = "DROP TABLE Demo";
         parser.parsingQuery(query);
