@@ -5,10 +5,7 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TableValidations {
 
@@ -40,16 +37,13 @@ public class TableValidations {
         return new BufferedReader(new FileReader(metaPath));
     }
 
-
     public String[] getColumns() {
         try {
             BufferedReader metaReader = getMetaReader();
             String rows;
-            System.out.println(tableName);
             while ((rows = metaReader.readLine()) != null) {
                 String[] row = rows.split("@@@");
                 if (row[2].equalsIgnoreCase(this.tableName)) {
-                    System.out.println(row);
                     return row;
                 }
             }
@@ -106,7 +100,7 @@ public class TableValidations {
                     Map<Integer, List<String>> resultSetActual = selectQueryExecutorActual.executeSelectStatementWithColumnList();
                     for (List<String> i : resultSetActual.values()) {
                         if (i.get(0).equals(inputFieldMap.get(columnName))) {
-                            System.out.println("Returning false");
+                            System.out.println("Primary Key Violated!");
                             return false;
                         }
                     }
@@ -131,68 +125,56 @@ public class TableValidations {
         return null;
     }
 
+    private String getColumnsArray() {
+        if (getColumns() != null) {
+            return getColumns()[4];
+        }
+        return null;
+    }
     public boolean checkForeignKey(String actualTable) {
-        SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(tableName, databaseName);
-        Map<Integer, List<String>> resultSet = selectQueryExecutor.executeSelectStatementWithFullColumns();
-
         String foreignKey = getForeignKey();
         if (foreignKey != null) {
             JSONObject foreignKeyObj = new JSONObject(foreignKey);
-            int indexOfKey = getIndexOfKeyName("foreign_key");
             JSONArray foreignKeyArrays = new JSONArray(foreignKeyObj.get("keys").toString());
             for (int fk = 0; fk < foreignKeyArrays.length(); fk++) {
                 JSONObject foreignKeyConstraintObj = new JSONObject(foreignKeyArrays.get(fk).toString());
-                String columnName = foreignKeyConstraintObj.getString("columns");
+                // department_id
+                String foreignKeyColumnInTable = foreignKeyConstraintObj.getString("column");
+                // id
                 String foreignKeyColumnName = foreignKeyConstraintObj.getString("foreignKeyColumn");
+                // department
                 String foreignKeyTableName = foreignKeyConstraintObj.getString("foreignKeyTable");
-                for (Map.Entry<Integer, List<String>> rows : resultSet.entrySet()) {
-                    try {
-                        List<String> rowDetails = rows.getValue();
-                        if (Boolean.parseBoolean(rowDetails.get(indexOfKey))) {
-                            int columnNameIndex = getIndexOfKeyName("column_name");
-                            int foreignKeyColumnNameIndex = getIndexOfKeyName("foreign_key_column_name");
-                            int foreignKeyTableIndex = getIndexOfKeyName("foreign_key_table_name");
-                            String foreignKeyValue = inputFieldMap.get(columnName);
-
-                            List<String> list = new ArrayList<String>();
-                            list.add(foreignKeyColumnName);
-                            // TODO: foreignKeyTableName cannot have white spaces.
-                            SelectQueryExecutor dependentSelectQueryExecutor = new SelectQueryExecutor(foreignKeyTableName, databaseName);
-                            dependentSelectQueryExecutor.setFieldList(list);
-                            Map<Integer, List<String>> dependentResultSet = dependentSelectQueryExecutor.executeSelectStatementWithColumnList();
-
-                            for (List<String> i : dependentResultSet.values()) {
-                                if (i.get(0).equals(foreignKeyValue)) {
-                                    System.out.println("Good to insert");
-                                    return true;
-                                }
-                            }
-                        }
-                    } catch (ArrayIndexOutOfBoundsException e) {
-                        System.out.println("Foreign key violation");
+                // query executor to query department table
+                SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(foreignKeyTableName, databaseName);
+                List<String> list = new ArrayList<>();
+                list.add(foreignKeyColumnName);
+                selectQueryExecutor.setFieldList(list);
+                Map<Integer, List<String>> foreignTableResult = selectQueryExecutor.executeSelectStatementWithColumnList();
+                for (List<String> i : foreignTableResult.values()) {
+                    if(i.get(0).equals(inputFieldMap.get(foreignKeyColumnInTable))){
+                        System.out.println("Good to insert");
+                        return true;
                     }
                 }
             }
-        } else {
-            System.out.println("No foreign key constraint");
-            return true;
         }
         System.out.println("Foreign key violation");
         return false;
     }
 
-    public boolean checkDataTypes() {
-        SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(tableName, databaseName);
-        Map<Integer, List<String>> resultSet = selectQueryExecutor.executeSelectStatementWithFullColumns();
+    public boolean checkDataTypes(String metaTableName) {
+        String columnsArray = getColumnsArray();
         boolean result = false;
-        if (validateColumnCount(columns, values)) {
+        if (columnsArray != null) {
+            JSONObject columnsArrayObject = new JSONObject(columnsArray);
+            JSONArray columnsArrays = new JSONArray(columnsArrayObject.get("columns").toString());
             Map<String, String> dataTypeMap = new HashMap<>();
-            for (Map.Entry<Integer, List<String>> rows : resultSet.entrySet()) {
+            for (int c = 0; c < columnsArrays.length(); c++) {
                 try {
-                    List<String> rowDetails = rows.getValue();
-                    int columnNameIndex = getIndexOfKeyName("column_name");
-                    int dataTypeIndex = getIndexOfKeyName("data_type");
-                    dataTypeMap.put(rowDetails.get(columnNameIndex), rowDetails.get(dataTypeIndex));
+                JSONObject columnArrayObj = new JSONObject(columnsArrays.get(c).toString());
+                String columnType = columnArrayObj.getString("columnType");
+                String columnName = columnArrayObj.getString("columnName");
+                dataTypeMap.put(columnName, columnType);
                 } catch (ArrayIndexOutOfBoundsException e) {
                 }
             }
@@ -210,20 +192,20 @@ public class TableValidations {
     public boolean checkDataTypeWithValues(String dataType, String value) {
         String stripDataType = dataType.replaceAll("\\s+", "");
         String stripValue = value.replaceAll("\\s+", "");
-        System.out.println(dataType);
-        System.out.println(stripValue);
-        if (dataType.equals("String")) {
+        if (dataType.equals("varchar")) {
             if (stripValue.length() == 0) {
                 System.out.println("Empty String");
                 return false;
             }
-        } else if (stripDataType.equals("Integer")) {
+        } else if (stripDataType.equals("int")) {
             Integer i = Integer.parseInt(stripValue);
-        } else if (stripDataType.equals("Float")) {
+        } else if (stripDataType.equals("float")) {
             float f = Float.parseFloat(value);
-        } else if (stripDataType.equals("Boolean")) {
+        } else if (stripDataType.equals("bool")) {
             if (stripValue.equals("true") || stripValue.equals("false")) {
-            } else {
+
+            }
+            else {
                 System.out.println("Not a boolean!");
                 return false;
             }
@@ -263,12 +245,6 @@ public class TableValidations {
             e.printStackTrace();
         }
         return tableList;
-    }
-
-    public static void main(String args[]) {
-        TableValidations tableValidations = new TableValidations("students", "test",
-                new String[]{"Id", "Name"}, new String[]{"1", "lastname"});
-        tableValidations.checkPrimaryKey("students");
     }
 }
 

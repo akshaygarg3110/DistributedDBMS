@@ -104,18 +104,15 @@ public class QueryParser {
             }
             String[] columnValues = matcher.group(5).split(",");
 
-            System.out.println(Arrays.asList(columnNames));
-            System.out.println(Arrays.asList(columnValues));
-
             try {
-                TableValidations tableValidations = new TableValidations("Schema", databaseName, columnNames, columnValues);
+                TableValidations tableValidations = new TableValidations(tableName, databaseName, columnNames, columnValues);
                 if (tableValidations.checkPrimaryKey(tableName)
                         && tableValidations.checkForeignKey(tableName)
-                        && tableValidations.checkDataTypes() && !isTransaction) {
+                        && tableValidations.checkDataTypes("meta") && !isTransaction) {
                     InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor(tableName, databaseName);
                     insertQueryExecutor.performInsertQueryOperation(columnValues);
                 } else {
-                    System.out.println("Constraint error");
+                    System.out.println("Constraint error(s) found!");
                 }
             } catch (IOException e) {
                 System.out.println("Cannot write to database" + e.getMessage());
@@ -320,10 +317,7 @@ public class QueryParser {
         QueryParser parser = new QueryParser();
         String query = "USE DATABASE DemoDB";
         parser.parsingQuery(query, false);
-        query = "INSERT INTO Demo(Id,Name,Age,Married,DepartmentId,VehicleId) VALUES (1,jay,20,false,4,4)";
-        //query = "DELETE FROM Demo WHERE Id!=1";
-        //query = "TRUNCATE TABLE Demo";
-        //query = "DROP TABLE Demo";
+        query = "insert into students_1 (student_id,name,age,course,department_id) values (28,Anna,88,MACS,2)";
         parser.parsingQuery(query, false);
     }
 }
