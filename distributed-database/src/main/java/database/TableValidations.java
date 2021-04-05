@@ -34,23 +34,6 @@ public class TableValidations {
         }
     }
 
-    BufferedReader getTableReader() throws Exception {
-        String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
-        if (location.equalsIgnoreCase("REMOTE")) {
-            RemoteFileHandler rfh = new RemoteFileHandler(databaseName, tableName);
-            return rfh.getReader();
-        }
-        return new BufferedReader(new FileReader(tablePath));
-    }
-
-    BufferedReader getMetaReader() throws Exception {
-        String metaPath = DATABASE_ROOT_PATH + "/meta.txt";
-        if (location.equalsIgnoreCase("REMOTE")) {
-            RemoteFileHandler rfh = new RemoteFileHandler("Database","meta");
-            return rfh.getReader();
-        }
-        return new BufferedReader(new FileReader(metaPath));
-    }
 
     public String[] getColumns() {
         try {BufferedReader metaReader;
@@ -77,9 +60,16 @@ public class TableValidations {
 
     public void populateColumnMap() {
         try {
-            BufferedReader tableReader = getTableReader();
-            String rows;
-            rows = tableReader.readLine();
+            BufferedReader tableReader;
+            if (location.equalsIgnoreCase("REMOTE")) {
+                URL url = new URL(REMOTE_URL + "/" + databaseName + tableName);
+                tableReader = new BufferedReader(
+                        new InputStreamReader(url.openStream()));
+            } else {
+                String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
+                tableReader = new BufferedReader(new FileReader(tablePath));
+            }
+            String rows = tableReader.readLine();
             String[] columns = rows.split("\\$");
 
             fieldMap = new HashMap<>();
@@ -263,7 +253,15 @@ public class TableValidations {
     private List<String> getTableNames() {
         List<String> tableList = new ArrayList<>();
         try {
-            BufferedReader metaReader = getMetaReader();
+            BufferedReader metaReader;
+            if (location.equalsIgnoreCase("REMOTE")) {
+                URL url = new URL(REMOTE_URL + "/" + databaseName + tableName);
+                metaReader = new BufferedReader(
+                        new InputStreamReader(url.openStream()));
+            } else {
+                String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
+                metaReader = new BufferedReader(new FileReader(tablePath));
+            }
             String rows;
             while ((rows = metaReader.readLine()) != null) {
                 String[] row = rows.split("@@@");
