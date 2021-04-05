@@ -8,11 +8,12 @@ public class TruncateQueryExecutor {
     public TruncateQueryExecutor(String databaseName) {
         this.databaseName = databaseName;
     }
+
     public void performTruncateQueryOperation(String tableName) throws IOException {
 
         String temp = "myFile2.txt";
 
-        File inputFile = new File( databaseName + '/' + tableName + ".csv");
+        File inputFile = new File( databaseName + '/' + tableName + ".txt");
         File tempFile = new File( databaseName + '/' + temp);
 
         FileReader fileReader = new FileReader(inputFile);

@@ -1,9 +1,0 @@
-student_id$name$age$course
-12$ Arun$ 25$ MACS
-16$Anna$76$MACS
-19$Anna$76$MACS$2
-20$Anna$76$MACS$2
-21$Anna$76$MACS$2
-22$Anna$76$MACS$2
-23$Anna$76$MACS$2
-28$Anna$88$MACS$2

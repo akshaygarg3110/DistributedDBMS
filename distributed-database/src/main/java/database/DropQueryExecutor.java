@@ -10,7 +10,7 @@ public class DropQueryExecutor {
     }
 
     public void performDropQueryOperation(String tableName) throws IOException {
-        File inputFile = new File(databaseName + '/' + tableName + ".csv");
+        File inputFile = new File(databaseName + '/' + tableName + ".txt");
         if (inputFile.exists()) {
             try {
                 inputFile.delete();

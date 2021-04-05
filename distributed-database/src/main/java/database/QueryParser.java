@@ -123,8 +123,10 @@ public class QueryParser {
 				if (tableValidations.checkPrimaryKey(tableName) && tableValidations.checkForeignKey(tableName)
 						&& tableValidations.checkDataTypes("meta") && !isTransaction) {
 					String location = getLocation(databaseName);
-					InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor(tableName, databaseName, location);
-					insertQueryExecutor.performInsertQueryOperation(columnValues);
+					if(location != null){
+						InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor(tableName, databaseName, location);
+						insertQueryExecutor.performInsertQueryOperation(columnValues);
+					}
 				} else {
 					System.out.println("Constraint error(s) found!");
 				}
@@ -296,6 +298,7 @@ public class QueryParser {
 	}
 
 	private void tokenizeDropQuery(Pattern pattern, Matcher matcher, String query) {
+		System.out.println("Hey im here");
 		pattern = Pattern.compile("(DROP)\\s+(TABLE)\\s+([\\w]+)\\s*$", Pattern.CASE_INSENSITIVE);
 		matcher = pattern.matcher(query);
 
@@ -328,8 +331,9 @@ public class QueryParser {
 			}
 			reader.close();
 		}catch(Exception e){
-			System.out.println("Database not found. Please create database");
+
 	}
+		System.out.println("Database not found. Please create database");
 		return null;
 	}
 
