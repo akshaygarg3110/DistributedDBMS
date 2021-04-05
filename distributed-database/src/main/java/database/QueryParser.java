@@ -4,12 +4,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -127,7 +122,8 @@ public class QueryParser {
 						columnValues);
 				if (tableValidations.checkPrimaryKey(tableName) && tableValidations.checkForeignKey(tableName)
 						&& tableValidations.checkDataTypes("meta") && !isTransaction) {
-					InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor(tableName, databaseName);
+					String location = getLocation(databaseName);
+					InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor(tableName, databaseName, location);
 					insertQueryExecutor.performInsertQueryOperation(columnValues);
 				} else {
 					System.out.println("Constraint error(s) found!");
@@ -316,6 +312,25 @@ public class QueryParser {
 		} else {
 			System.out.println("Query syntax is not correct, please check keywords spellings and order.");
 		}
+	}
+
+	private String getLocation(String databaseName)
+	{
+		try{
+			BufferedReader reader = new BufferedReader(new FileReader("Database" + "/" + "meta.txt"));
+			String line = reader.readLine();
+			while (line != null) {
+				String[] arr = line.split("@@@");
+				if(arr[1].equalsIgnoreCase(databaseName)){
+					return arr[0];
+				}
+				line = reader.readLine();
+			}
+			reader.close();
+		}catch(Exception e){
+			System.out.println("Database not found. Please create database");
+	}
+		return null;
 	}
 
 	private void tokenizeTruncateQuery(Pattern pattern, Matcher matcher, String query) {
