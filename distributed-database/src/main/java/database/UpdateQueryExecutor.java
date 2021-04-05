@@ -3,8 +3,6 @@ package database;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.io.InputStreamReader;
-import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -38,14 +36,13 @@ public class UpdateQueryExecutor {
             if (location.equalsIgnoreCase("REMOTE")) {
                 RemoteFileHandler remoteFileHandler = new RemoteFileHandler(databaseName, tableName);
                 remoteFileHandler.downloadObject();
-                tableReader = new BufferedReader(new FileReader(DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt" ));
+                tableReader = new BufferedReader(new FileReader(DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt"));
             } else {
                 String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
                 tableReader = new BufferedReader(new FileReader(tablePath));
             }
             String rows;
             rows = tableReader.readLine();
-            System.out.println(rows);
             String[] columns = rows.split("\\$");
             fieldMap = new HashMap<>();
             for (int i = 0; i < columns.length; i++) {
@@ -86,7 +83,6 @@ public class UpdateQueryExecutor {
             }
             resultSet.put(rows.getKey(), Arrays.asList(rowVal));
         }
-        System.out.println(resultSet);
         insertRowDetailsInFile(resultSet);
     }
 
@@ -136,21 +132,24 @@ public class UpdateQueryExecutor {
     }
 
     void executeUpdateMain(String operations, String condition) {
-        if (operations != null && condition != null) {
-            String[] operationPairs = operations.split(",");
-            for (String operation : operationPairs) {
-                String[] operands = operation.split("=");
-                int comparisonOperation = fetchOperationType(condition);
-                String operator = fetchOperation(condition);
-                String[] conditionParameters = condition.split(operator);
-                System.out.println(conditionParameters[0]);
-                performUpdateOnARow(conditionParameters[0], conditionParameters[1],
-                        operands[0], operands[1], comparisonOperation);
+        try {
+            if (operations != null && condition != null) {
+                String[] operationPairs = operations.split(",");
+                for (String operation : operationPairs) {
+                    String[] operands = operation.split("=");
+                    int comparisonOperation = fetchOperationType(condition);
+                    String operator = fetchOperation(condition);
+                    String[] conditionParameters = condition.split(operator);
+                    performUpdateOnARow(conditionParameters[0], conditionParameters[1],
+                            operands[0], operands[1], comparisonOperation);
+                }
             }
-            System.out.println("Updated successfully in the table!");
+            System.out.println("Updated Success");
+        } catch (Exception e) {
+            System.out.println("Updated Failed");
         }
-
     }
+
 
     private int fetchOperationType(String condition) {
         if (condition.contains("!=")) {
