@@ -58,15 +58,30 @@ public class RemoteFileHandler {
 
     public BufferedReader getReader() {
         try {
-            String urlPath = REMOTE_URL
-                    + DEFAULT_DATABASE_ROOT_PATH + "/"
-                    + directoryName + "/"
-                    + fileName;
+            if (reader!=null)
+            {
+                reader.close();
+            }
+            String urlPath;
+            if(fileName.equalsIgnoreCase("meta"))
+            {
+                 urlPath = REMOTE_URL
+                        + DEFAULT_DATABASE_ROOT_PATH + "/"
+                        + fileName;
+            }
+            else {
+                 urlPath = REMOTE_URL
+                        + DEFAULT_DATABASE_ROOT_PATH + "/"
+                        + directoryName + "/"
+                        + fileName;
+            }
             URL url = new URL(urlPath);
             reader = new BufferedReader(
                     new InputStreamReader(url.openStream()));
             return reader;
-        } catch (Exception e) {
+        }
+
+        catch (Exception e) {
             e.printStackTrace();
         }
         return null;

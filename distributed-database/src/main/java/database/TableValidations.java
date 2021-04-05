@@ -16,12 +16,14 @@ public class TableValidations {
     private String[] values;
     private Map<Integer, String> fieldMap;
     private Map<String, String> inputFieldMap = new HashMap<>();
+    private String location;
 
-    public TableValidations(String tableName, String databaseName, String[] columns, String[] values) {
+    public TableValidations(String tableName, String databaseName, String[] columns, String[] values, String location) {
         this.tableName = tableName;
         this.databaseName = databaseName;
         this.columns = columns;
         this.values = values;
+        this.location = location;
         if(!(columns == null || values == null)) {
             for (int i = 0; i < columns.length; i++) {
                 inputFieldMap.put(columns[i], values[i]);
@@ -31,11 +33,19 @@ public class TableValidations {
 
     BufferedReader getTableReader() throws Exception {
         String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
+        if (location.equalsIgnoreCase("REMOTE")) {
+            RemoteFileHandler rfh = new RemoteFileHandler(databaseName, tableName);
+            return rfh.getReader();
+        }
         return new BufferedReader(new FileReader(tablePath));
     }
 
     BufferedReader getMetaReader() throws Exception {
         String metaPath = DATABASE_ROOT_PATH + "/meta.txt";
+        if (location.equalsIgnoreCase("REMOTE")) {
+            RemoteFileHandler rfh = new RemoteFileHandler("Database","meta");
+            return rfh.getReader();
+        }
         return new BufferedReader(new FileReader(metaPath));
     }
 
@@ -84,7 +94,7 @@ public class TableValidations {
 
     public boolean checkPrimaryKey(String actualTableName) {
         // selecting all records of Schema table
-        SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(tableName, databaseName, "");
+        SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(tableName, databaseName, location);
         Map<Integer, List<String>> resultSet = selectQueryExecutor.executeSelectStatementWithFullColumns();
 
         // position of primary_key column in schema file
@@ -95,7 +105,7 @@ public class TableValidations {
             try {
                 List<String> rowDetails = rows.getValue();
                 if (columnName != null) {
-                    SelectQueryExecutor selectQueryExecutorActual = new SelectQueryExecutor(actualTableName, databaseName, "");
+                    SelectQueryExecutor selectQueryExecutorActual = new SelectQueryExecutor(actualTableName, databaseName, location);
                     List<String> list = new ArrayList<>();
                     list.add(columnName);
                     selectQueryExecutorActual.setFieldList(list);
@@ -150,7 +160,7 @@ public class TableValidations {
                 // department
                 String foreignKeyTableName = foreignKeyConstraintObj.getString("foreignKeyTable");
                 // query executor to query department table
-                SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(foreignKeyTableName, databaseName, "");
+                SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(foreignKeyTableName, databaseName, location);
                 List<String> list = new ArrayList<>();
                 list.add(foreignKeyColumnName);
                 selectQueryExecutor.setFieldList(list);

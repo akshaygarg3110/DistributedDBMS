@@ -22,7 +22,7 @@ public class CreateTableQuery {
     private void createRecordInMetaDataFile(String server, String database, String tableName, String primaryKey,
                                             JSONObject tableColumnsObject, JSONObject tableForeignKeysObject) {
         try {
-            File f = new File("Database\\" + "meta.txt");
+            File f = new File("Database" + "/" + "meta.txt");
             FileWriter fstream = new FileWriter(f, true);
             BufferedWriter out = new BufferedWriter(fstream);
             String s = server + "@@@" + database + "@@@" + tableName + "@@@" + primaryKey + "@@@" + tableColumnsObject.toJSONString()
@@ -41,7 +41,7 @@ public class CreateTableQuery {
 
     private String createFileInFileSystem(List<String> columns, String database, String tableName) {
     	String server = "";
-        File tableFile = new File("Database\\" + database + "\\" + tableName + ".txt");
+        File tableFile = new File("Database/" + database + "/" + tableName + ".txt");
         if (!tableFile.exists()) {
             try {
             	FileWriter fstream = new FileWriter(tableFile, true);

@@ -117,11 +117,11 @@ public class QueryParser {
             String[] columnValues = matcher.group(5).split(",");
 
             try {
+                String location = getLocation(tableName);
                 TableValidations tableValidations = new TableValidations(tableName, databaseName, columnNames,
-                        columnValues);
+                        columnValues, location);
                 if (tableValidations.checkPrimaryKey(tableName) && tableValidations.checkForeignKey(tableName)
                         && tableValidations.checkDataTypes("meta") && !isTransaction) {
-                    String location = getLocation(databaseName);
                     InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor(tableName, databaseName, location);
                     insertQueryExecutor.performInsertQueryOperation(columnValues);
                 } else {
@@ -165,7 +165,7 @@ public class QueryParser {
             String columns = matcher.group(2);
             String tableName = matcher.group(3);
             String conditions = matcher.group(5);
-            String location = getLocation(databaseName);
+            String location = getLocation(tableName);
             if (location != null) {
                 SelectQueryExecutor sqe = new SelectQueryExecutor(tableName, databaseName, location);
                 sqe.executeSelectMain(operation, columns, conditions);
@@ -186,7 +186,7 @@ public class QueryParser {
             String updateOperations = matcher.group(3);
             String conditions = matcher.group(5);
             if (!isTransaction) {
-                String location = getLocation(databaseName);
+                String location = getLocation(tableName);
                 if (location != null) {
                     UpdateQueryExecutor uqe = new UpdateQueryExecutor(tableName, databaseName, location);
                     uqe.executeUpdateMain(updateOperations, conditions);
@@ -258,7 +258,8 @@ public class QueryParser {
             }
             tableColumnsObject.put("columns", columnArray);
             tableForeignKeysObject.put("keys", foreignKeyArray);
-            TableValidations taskValidation = new TableValidations(tableName, databaseName, columnDescArray, null);
+            String location = getLocation(tableName);
+            TableValidations taskValidation = new TableValidations(tableName, databaseName, columnDescArray, null, location);
             if (taskValidation.checkIfTableNameValid(tableName)) {
                 CreateTableQuery createTableQuery = new CreateTableQuery();
                 createTableQuery.exceuteCreateTableQuery(QueryParser.databaseName, tableName, primaryKey, columns,
@@ -319,13 +320,13 @@ public class QueryParser {
         }
     }
 
-    private String getLocation(String databaseName) {
+    private String getLocation(String tableName) {
         try {
             BufferedReader reader = new BufferedReader(new FileReader("Database" + "/" + "meta.txt"));
             String line = reader.readLine();
             while (line != null) {
                 String[] arr = line.split("@@@");
-                if (arr[1].equalsIgnoreCase(databaseName)) {
+                if (arr[2].equalsIgnoreCase(tableName)) {
                     return arr[0];
                 }
                 line = reader.readLine();

@@ -19,28 +19,14 @@ public class InsertQueryExecutor {
     public void performInsertQueryOperation(String[] values) throws IOException
     {
         try {
-            RemoteFileHandler rhf = new RemoteFileHandler(databaseName, tableName);
-            List<String> existingContents = new ArrayList<>();
-            if(location.equalsIgnoreCase("REMOTE"))
-            {
-                BufferedReader reader = rhf.getReader();
-                String currentLine;
-                while((currentLine = reader.readLine()) != null){
-                    existingContents.add(currentLine);
-                }
-                rhf.closeReader();
-            }
-
             File file = new File("Database" + "/" + databaseName + '/' + tableName + ".txt");
             FileWriter fileWriter = new FileWriter(file, true);
             BufferedWriter tableWriter = new BufferedWriter(fileWriter);
             List<String> list = Arrays.asList(values);
-            existingContents.add(String.join("$", list));
-            for(String row : existingContents)
-            {
-                tableWriter.write(row);
-            }
+            tableWriter.write("\n");
+            tableWriter.write(String.join("$", list));
             tableWriter.close();
+            RemoteFileHandler rhf = new RemoteFileHandler(databaseName, tableName);
             rhf.uploadObject();
         }
         catch(IOException e) {

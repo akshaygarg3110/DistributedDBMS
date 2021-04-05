@@ -98,7 +98,7 @@ public class UpdateQueryExecutor {
     private boolean insertRowDetailsInFile(Map<Integer, List<String>> resultSet) {
         try {
             try {
-                FileWriter insertRecord = new FileWriter("Database\\" + databaseName + "/" + tableName + ".txt");
+                FileWriter insertRecord = new FileWriter("Database/" + databaseName + "/" + tableName + ".txt");
                 String headerLine = String.join("$", fieldMap.values());
                 System.out.println(headerLine);
                 insertRecord.write(headerLine);

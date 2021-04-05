@@ -32,7 +32,7 @@ public class Main {
 			if (query.contains("RECOVER")) {
 				String[] recoverArray = query.split(" ");
 				String filename = recoverArray[1] + "_dump.txt";
-				executeRecovery("Database\\" + filename);
+				executeRecovery("Database/" + filename);
 			} else {
 				QueryParser queryParser = new QueryParser();
 				boolean result = queryParser.parsingQuery(query, false);

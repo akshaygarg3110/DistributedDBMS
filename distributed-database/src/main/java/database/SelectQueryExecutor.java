@@ -40,7 +40,7 @@ public class SelectQueryExecutor {
     BufferedReader getMetaReader() throws Exception {
         String metaPath = DATABASE_ROOT_PATH + "/meta.txt";
         if (location.equalsIgnoreCase("REMOTE")) {
-            RemoteFileHandler rfh = new RemoteFileHandler(databaseName, tableName);
+            RemoteFileHandler rfh = new RemoteFileHandler("","meta");
             return rfh.getReader();
         }
         return new BufferedReader(new FileReader(metaPath));
