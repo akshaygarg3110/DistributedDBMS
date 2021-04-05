@@ -16,6 +16,10 @@ import java.nio.file.Paths;
 
 public class RemoteFileHandler {
 
+    /**
+     * ref: https://cloud.google.com/storage/docs
+     */
+
     public static final String DEFAULT_DATABASE_ROOT_PATH = "Database";
     public static final String GOOGLE_BUCKET_NAME = "5408_project_team6";
     public static final String GOOGLE_PROJECT_ID = "csci5408-w21";
@@ -79,6 +83,21 @@ public class RemoteFileHandler {
 
     }
 
+    public void deleteObject() throws IOException {
+        String googleFilePath;
+        if (directoryName.equalsIgnoreCase(DEFAULT_DATABASE_ROOT_PATH)) {
+            googleFilePath = DEFAULT_DATABASE_ROOT_PATH + "/" + fileName;
+        } else {
+            googleFilePath = DEFAULT_DATABASE_ROOT_PATH + "/" + directoryName + "/" + fileName;
+        }
+
+        StorageOptions storageOptions = StorageOptions.newBuilder()
+                .setProjectId(GOOGLE_PROJECT_ID)
+                .setCredentials(GoogleCredentials.fromStream(new
+                        FileInputStream("key.json"))).build();
+        Storage storage = storageOptions.getService();
+        storage.delete(GOOGLE_BUCKET_NAME, googleFilePath);
+    }
 
     public static void main(String[] args) {
         try {

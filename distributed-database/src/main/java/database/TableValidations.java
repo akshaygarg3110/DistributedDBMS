@@ -84,7 +84,7 @@ public class TableValidations {
 
     public boolean checkPrimaryKey(String actualTableName) {
         // selecting all records of Schema table
-        SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(tableName, databaseName);
+        SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(tableName, databaseName, "");
         Map<Integer, List<String>> resultSet = selectQueryExecutor.executeSelectStatementWithFullColumns();
 
         // position of primary_key column in schema file
@@ -95,7 +95,7 @@ public class TableValidations {
             try {
                 List<String> rowDetails = rows.getValue();
                 if (columnName != null) {
-                    SelectQueryExecutor selectQueryExecutorActual = new SelectQueryExecutor(actualTableName, databaseName);
+                    SelectQueryExecutor selectQueryExecutorActual = new SelectQueryExecutor(actualTableName, databaseName, "");
                     List<String> list = new ArrayList<>();
                     list.add(columnName);
                     selectQueryExecutorActual.setFieldList(list);
@@ -150,7 +150,7 @@ public class TableValidations {
                 // department
                 String foreignKeyTableName = foreignKeyConstraintObj.getString("foreignKeyTable");
                 // query executor to query department table
-                SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(foreignKeyTableName, databaseName);
+                SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(foreignKeyTableName, databaseName, "");
                 List<String> list = new ArrayList<>();
                 list.add(foreignKeyColumnName);
                 selectQueryExecutor.setFieldList(list);
