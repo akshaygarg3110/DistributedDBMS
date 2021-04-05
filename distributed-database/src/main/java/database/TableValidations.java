@@ -138,6 +138,9 @@ public class TableValidations {
         if (foreignKey != null) {
             JSONObject foreignKeyObj = new JSONObject(foreignKey);
             JSONArray foreignKeyArrays = new JSONArray(foreignKeyObj.get("keys").toString());
+            if(foreignKeyArrays.length() == 0) {
+            	return true;
+            }
             for (int fk = 0; fk < foreignKeyArrays.length(); fk++) {
                 JSONObject foreignKeyConstraintObj = new JSONObject(foreignKeyArrays.get(fk).toString());
                 // department_id
