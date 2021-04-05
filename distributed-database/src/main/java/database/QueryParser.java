@@ -6,7 +6,9 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,18 +28,19 @@ public class QueryParser {
             query.replaceAll("\\s+", " ");
 
             Pattern pattern = Pattern.compile(
-                    "^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE DATABASE |BEGIN TRANSACTION |DROP TABLE |TRUNCATE TABLE | SHOW DATABASE |DESC |DESCRIBE)",
+                    "^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE DATABASE |BEGIN TRANSACTION |DROP TABLE |TRUNCATE TABLE |SHOW |DESC |DESCRIBE)",
                     Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(query);
             boolean matchFound = matcher.find();
             if (matchFound) {
                 String queryType = matcher.group();
                 System.out.println("Match found");
-
                 if (queryType.trim().equalsIgnoreCase("CREATE DATABASE") && !isTransaction) {
                     tokenizeCreateDatabaseQuery(pattern, matcher, query);
                 } else if (queryType.trim().equalsIgnoreCase("USE DATABASE") && !isTransaction) {
                     tokenizeUseDatabaseQuery(pattern, matcher, query);
+                } else if (queryType.trim().equalsIgnoreCase("SHOW") && !isTransaction) {
+                    tokenizeShowDatabaseQuery(pattern, matcher, query);
                 } else if (StringUtils.isBlank(QueryParser.databaseName)) {
                     System.out.println("Please specify database");
                 } else if (queryType.trim().equalsIgnoreCase("SELECT") && !isTransaction) {
@@ -56,8 +59,6 @@ public class QueryParser {
                     tokenizeDropQuery(pattern, matcher, query);
                 } else if (queryType.trim().equalsIgnoreCase("TRUNCATE TABLE") && !isTransaction) {
                     tokenizeTruncateQuery(pattern, matcher, query);
-                } else if (queryType.trim().equalsIgnoreCase("SHOW DATABASE") && !isTransaction) {
-                    tokenizeShowDatabaseQuery(pattern, matcher, query);
                 } else if ((queryType.trim().equalsIgnoreCase("DESC")
                         || queryType.trim().equalsIgnoreCase("DESCRIBE"))
                         && !isTransaction) {
@@ -74,18 +75,20 @@ public class QueryParser {
 
     private void tokenizeDescribeQuery(Pattern pattern, Matcher matcher, String query) {
         pattern = Pattern.compile(
-                "(DESCRIBE | DESC)\\s+\\(([\\w]+)\\)$",
+                "(DESCRIBE |DESC)\\s+([\\w]+)\\s*$",
                 Pattern.CASE_INSENSITIVE);
         matcher = pattern.matcher(query);
         if (matcher.find()) {
             String tableName = matcher.group(2);
+            System.out.println(tableName);
             try {
                 BufferedReader reader = new BufferedReader(new FileReader("Database/meta.txt"));
                 String line;
                 boolean isTableFound = false;
                 while ((line = reader.readLine()) != null) {
                     String[] components = line.split("@@@");
-                    if (line.equalsIgnoreCase(tableName)) {
+                    if (components[2].equalsIgnoreCase(tableName)
+                            && components[1].equalsIgnoreCase(databaseName)) {
                         isTableFound = true;
                         System.out.println("Column Name ___ Column Type ___ PK");
                         String pk = components[3];
@@ -122,9 +125,15 @@ public class QueryParser {
             System.out.println("Databases present are:");
             System.out.println("Database name ___ Location");
             String line;
+            Map<String, Boolean> databaseMap = new HashMap<>();
             while ((line = reader.readLine()) != null) {
                 String[] components = line.split("@@@");
-                System.out.println(components[1] + " ___" + components[0]);
+                if (!databaseMap.containsKey(components[1] + " ___" + components[0])) {
+                    databaseMap.put(components[1] + " ___" + components[0], true);
+                }
+            }
+            for (Map.Entry<String, Boolean> entry : databaseMap.entrySet()) {
+                System.out.println(entry.getKey());
             }
             reader.close();
 

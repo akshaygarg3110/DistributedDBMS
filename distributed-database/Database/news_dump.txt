@@ -8,3 +8,5 @@ insert into j(student_id,name,age,course) values (10,Ajay,15, MACS)
 insert into j(student_id,name,age,course) values (11,Ankit,15,MACS)
 update j set name=anu where age=10
 use database news
+use database news
+use database news

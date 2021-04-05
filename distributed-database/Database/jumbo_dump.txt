@@ -3,3 +3,8 @@ create table newapp(student_id varchar Primary Key, name varchar, age int, cours
 insert into newapp(student_id,name,age,course) values (3,Aruna,15,CS)
 insert into newapp(student_id,name,age,course) values (2,Arun,25,MACS)
 update newapp set name=ram where student_id=2
+use database jumbo
+use database jumbo
+use database jumbo
+use database jumbo
+use database jumbo
