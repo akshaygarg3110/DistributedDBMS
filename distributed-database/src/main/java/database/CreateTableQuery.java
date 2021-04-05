@@ -7,7 +7,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Random;
 
-import org.json.simple.JSONObject;
+import org.json.JSONObject;
 
 public class CreateTableQuery {
 
@@ -25,8 +25,8 @@ public class CreateTableQuery {
             File f = new File("Database" + "/" + "meta.txt");
             FileWriter fstream = new FileWriter(f, true);
             BufferedWriter out = new BufferedWriter(fstream);
-            String s = server + "@@@" + database + "@@@" + tableName + "@@@" + primaryKey + "@@@" + tableColumnsObject.toJSONString()
-                    + "@@@" + tableForeignKeysObject.toJSONString();
+            String s = server + "@@@" + database + "@@@" + tableName + "@@@" + primaryKey + "@@@" + tableColumnsObject.toString()
+                    + "@@@" + tableForeignKeysObject.toString();
             out.write(s);
             out.newLine();
             out.flush();

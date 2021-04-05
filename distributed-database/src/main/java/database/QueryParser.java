@@ -1,8 +1,8 @@
 package database;
 
 import org.apache.commons.lang3.StringUtils;
-import org.json.simple.JSONArray;
-import org.json.simple.JSONObject;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -26,7 +26,7 @@ public class QueryParser {
             query.replaceAll("\\s+", " ");
 
             Pattern pattern = Pattern.compile(
-                    "^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE DATABASE |BEGIN TRANSACTION |DROP TABLE |TRUNCATE TABLE)",
+                    "^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE DATABASE |BEGIN TRANSACTION |DROP TABLE |TRUNCATE TABLE | SHOW DATABASE |DESC |DESCRIBE)",
                     Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(query);
             boolean matchFound = matcher.find();
@@ -56,6 +56,12 @@ public class QueryParser {
                     tokenizeDropQuery(pattern, matcher, query);
                 } else if (queryType.trim().equalsIgnoreCase("TRUNCATE TABLE") && !isTransaction) {
                     tokenizeTruncateQuery(pattern, matcher, query);
+                } else if (queryType.trim().equalsIgnoreCase("SHOW DATABASE") && !isTransaction) {
+                    tokenizeShowDatabaseQuery(pattern, matcher, query);
+                } else if ((queryType.trim().equalsIgnoreCase("DESC")
+                        || queryType.trim().equalsIgnoreCase("DESCRIBE"))
+                        && !isTransaction) {
+                    tokenizeDescribeQuery(pattern, matcher, query);
                 }
             } else {
                 System.out.println("Query syntax is not correct, please check keywords spellings and order.");
@@ -64,6 +70,67 @@ public class QueryParser {
         }
 
         return true;
+    }
+
+    private void tokenizeDescribeQuery(Pattern pattern, Matcher matcher, String query) {
+        pattern = Pattern.compile(
+                "(DESCRIBE | DESC)\\s+\\(([\\w]+)\\)$",
+                Pattern.CASE_INSENSITIVE);
+        matcher = pattern.matcher(query);
+        if (matcher.find()) {
+            String tableName = matcher.group(2);
+            try {
+                BufferedReader reader = new BufferedReader(new FileReader("Database/meta.txt"));
+                String line;
+                boolean isTableFound = false;
+                while ((line = reader.readLine()) != null) {
+                    String[] components = line.split("@@@");
+                    if (line.equalsIgnoreCase(tableName)) {
+                        isTableFound = true;
+                        System.out.println("Column Name ___ Column Type ___ PK");
+                        String pk = components[3];
+                        JSONObject columnsObj = new JSONObject(components[4]);
+                        JSONArray columnArray = new JSONArray(columnsObj.get("columns").toString());
+                        for (int i = 0; i < columnArray.length(); i++) {
+                            JSONObject column = new JSONObject(columnArray.get(i).toString());
+                            if (pk.equalsIgnoreCase(column.getString("columnName"))) {
+                                System.out.println(column.getString("columnName")
+                                        + "___" + column.getString("columnType")
+                                        + "___YES");
+                            } else {
+                                System.out.println(column.getString("columnName")
+                                        + "___" + column.getString("columnType")
+                                        + "___NO");
+                            }
+                        }
+                    }
+                }
+                if (!isTableFound) {
+                    System.out.println("Table Not Found! Check table name");
+                }
+
+            } catch (Exception e) {
+                System.out.println("Error in your SQL Syntax. Please check");
+            }
+        }
+
+    }
+
+    private void tokenizeShowDatabaseQuery(Pattern pattern, Matcher matcher, String query) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("Database/meta.txt"));
+            System.out.println("Databases present are:");
+            System.out.println("Database name ___ Location");
+            String line;
+            while ((line = reader.readLine()) != null) {
+                String[] components = line.split("@@@");
+                System.out.println(components[1] + " ___" + components[0]);
+            }
+            reader.close();
+
+        } catch (Exception e) {
+
+        }
     }
 
     private void writeDump(String query) {
@@ -236,7 +303,7 @@ public class QueryParser {
                     columnObj.put("columnName", columnName.trim());
                     columns.add(columnName.trim());
                     columnObj.put("columnType", columnType.trim());
-                    columnArray.add(columnObj);
+                    columnArray.put(columnObj);
 
                     if (constraint != null && constraint.trim().length() > 0
                             && constraint.trim().equalsIgnoreCase("PRIMARY KEY")) {
@@ -248,7 +315,7 @@ public class QueryParser {
                         foreignKeyObj.put("column", columnName);
                         foreignKeyObj.put("foreignKeyTable", foreignKeyTable.trim());
                         foreignKeyObj.put("foreignKeyColumn", foreignKeyColumn.trim());
-                        foreignKeyArray.add(foreignKeyObj);
+                        foreignKeyArray.put(foreignKeyObj);
                     }
 
                 } else {
