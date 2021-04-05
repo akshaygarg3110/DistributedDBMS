@@ -7,12 +7,15 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.*;
 
 
 public class SelectQueryExecutor {
 
     private static final String DATABASE_ROOT_PATH = "Database";
+    private static final Object REMOTE_URL = "https://storage.googleapis.com/5408_project_team6/Database";
     private String tableName;
     private String databaseName;
     private List<String> lhsConstraint;
@@ -36,30 +39,18 @@ public class SelectQueryExecutor {
         this.fieldList = fieldList;
     }
 
-
-    BufferedReader getMetaReader() throws Exception {
-        String metaPath = DATABASE_ROOT_PATH + "/meta.txt";
-        if (location.equalsIgnoreCase("REMOTE")) {
-            RemoteFileHandler rfh = new RemoteFileHandler("","meta");
-            return rfh.getReader();
-        }
-        return new BufferedReader(new FileReader(metaPath));
-    }
-
-    BufferedReader getTableReader() throws Exception {
-        String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
-        if (location.equalsIgnoreCase("REMOTE")) {
-            RemoteFileHandler rfh = new RemoteFileHandler(databaseName, tableName);
-            return rfh.getReader();
-        }
-        return new BufferedReader(new FileReader(tablePath));
-    }
-
     void populateColumnMap() {
         try {
-            BufferedReader tableReader = getTableReader();
-            String rows;
-            rows = tableReader.readLine();
+            BufferedReader tableReader;
+            if (location.equalsIgnoreCase("REMOTE")) {
+                URL url = new URL(REMOTE_URL + "/" + databaseName + tableName);
+                tableReader = new BufferedReader(
+                        new InputStreamReader(url.openStream()));
+            } else {
+                String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
+                tableReader = new BufferedReader(new FileReader(tablePath));
+            }
+            String rows = tableReader.readLine();
             String[] columns = rows.split("\\$");
             fieldMap = new HashMap<>();
             for (int i = 0; i < columns.length; i++) {
@@ -84,7 +75,15 @@ public class SelectQueryExecutor {
 
     void populateDataTypeMap() {
         try {
-            BufferedReader metaReader = getMetaReader();
+            BufferedReader metaReader;
+            if (location.equalsIgnoreCase("REMOTE")) {
+                URL url = new URL(REMOTE_URL + "/" + databaseName + tableName);
+                metaReader = new BufferedReader(
+                        new InputStreamReader(url.openStream()));
+            } else {
+                String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
+                metaReader = new BufferedReader(new FileReader(tablePath));
+            }
             String rows;
             String dataType = null;
             while ((rows = metaReader.readLine()) != null) {
@@ -105,7 +104,15 @@ public class SelectQueryExecutor {
     Map<Integer, List<String>> executeSelectStatementWithFullColumns() {
         try {
             Map<Integer, List<String>> selectResult = new HashMap<>();
-            BufferedReader tableReader = getTableReader();
+            BufferedReader tableReader;
+            if (location.equalsIgnoreCase("REMOTE")) {
+                URL url = new URL(REMOTE_URL + "/" + databaseName + tableName);
+                tableReader = new BufferedReader(
+                        new InputStreamReader(url.openStream()));
+            } else {
+                String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
+                tableReader = new BufferedReader(new FileReader(tablePath));
+            }
             String rows;
             int rowCounter = 0;
             while ((rows = tableReader.readLine()) != null) {
@@ -115,6 +122,7 @@ public class SelectQueryExecutor {
                 }
                 rowCounter++;
             }
+            tableReader.close();
             return selectResult;
         } catch (Exception e) {
             e.printStackTrace();
@@ -296,7 +304,7 @@ public class SelectQueryExecutor {
     }
 
     public static void main(String args[]) {
-        SelectQueryExecutor sqe = new SelectQueryExecutor("students", "test","local");
+        SelectQueryExecutor sqe = new SelectQueryExecutor("students", "test", "local");
         String operation = "Select";
         String columns = "*";
         String conditions = "English<90";

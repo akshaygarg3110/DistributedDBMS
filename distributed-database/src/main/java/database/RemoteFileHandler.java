@@ -28,7 +28,6 @@ public class RemoteFileHandler {
     private final String directoryName;
     private final String fileName;
 
-    private BufferedReader reader;
 
     public RemoteFileHandler(String directoryName, String fileName) {
         this.fileName = fileName;
@@ -56,47 +55,7 @@ public class RemoteFileHandler {
         storage.create(blobInfo, Files.readAllBytes(Paths.get(filePath)));
     }
 
-    public BufferedReader getReader() {
-        try {
-            if (reader!=null)
-            {
-                reader.close();
-            }
-            String urlPath;
-            if(fileName.equalsIgnoreCase("meta"))
-            {
-                 urlPath = REMOTE_URL
-                        + DEFAULT_DATABASE_ROOT_PATH + "/"
-                        + fileName;
-            }
-            else {
-                 urlPath = REMOTE_URL
-                        + DEFAULT_DATABASE_ROOT_PATH + "/"
-                        + directoryName + "/"
-                        + fileName;
-            }
-            URL url = new URL(urlPath);
-            reader = new BufferedReader(
-                    new InputStreamReader(url.openStream()));
-            return reader;
-        }
 
-        catch (Exception e) {
-            e.printStackTrace();
-        }
-        return null;
-    }
-
-    public void closeReader() {
-        try {
-            if (reader != null) {
-                reader.close();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-    }
 
     public void deleteObject() throws IOException {
         String googleFilePath;
@@ -116,14 +75,14 @@ public class RemoteFileHandler {
 
     public static void main(String[] args) {
         try {
-            RemoteFileHandler remoteFileHandler = new RemoteFileHandler("test", "students");
+            /*RemoteFileHandler remoteFileHandler = new RemoteFileHandler("test", "students");
             remoteFileHandler.uploadObject();
             String line;
             BufferedReader reader = remoteFileHandler.getReader();
             while ((line = reader.readLine()) != null) {
                 System.out.println(line);
             }
-            remoteFileHandler.closeReader();
+            remoteFileHandler.closeReader();*/
         } catch (Exception e) {
             e.printStackTrace();
         }

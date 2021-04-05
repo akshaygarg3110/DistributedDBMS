@@ -5,11 +5,14 @@ import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.*;
 
 public class TableValidations {
 
     private static final String DATABASE_ROOT_PATH = "Database";
+    private static final Object REMOTE_URL = "https://storage.googleapis.com/5408_project_team6/Database";
     private String tableName;
     private String databaseName;
     private String[] columns;
@@ -50,8 +53,15 @@ public class TableValidations {
     }
 
     public String[] getColumns() {
-        try {
-            BufferedReader metaReader = getMetaReader();
+        try {BufferedReader metaReader;
+            if (location.equalsIgnoreCase("REMOTE")) {
+                URL url = new URL(REMOTE_URL + "/" + databaseName + tableName);
+                metaReader = new BufferedReader(
+                        new InputStreamReader(url.openStream()));
+            } else {
+                String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
+                metaReader = new BufferedReader(new FileReader(tablePath));
+            }
             String rows;
             while ((rows = metaReader.readLine()) != null) {
                 String[] row = rows.split("@@@");
@@ -145,6 +155,9 @@ public class TableValidations {
     }
     public boolean checkForeignKey(String actualTable) {
         String foreignKey = getForeignKey();
+        if (foreignKey == null) {
+            return true;
+        }
         if (foreignKey != null) {
             JSONObject foreignKeyObj = new JSONObject(foreignKey);
             JSONArray foreignKeyArrays = new JSONArray(foreignKeyObj.get("keys").toString());
