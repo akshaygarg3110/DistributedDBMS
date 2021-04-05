@@ -3,6 +3,8 @@ package database;
 import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.InputStreamReader;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -16,6 +18,8 @@ public class UpdateQueryExecutor {
     private String databaseName;
     private Map<Integer, String> fieldMap;
     private String location;
+    private static final String DATABASE_ROOT_PATH = "Database";
+    private static final Object REMOTE_URL = "https://storage.googleapis.com/5408_project_team6/Database";
 
     public UpdateQueryExecutor(String tableName, String databaseName, String location) {
         this.tableName = tableName;
@@ -30,9 +34,20 @@ public class UpdateQueryExecutor {
 
     void populateColumnMap() {
         try {
-            BufferedReader tableReader = getTableReader();
+            BufferedReader tableReader;
+            if (location.equalsIgnoreCase("REMOTE")) {
+                URL url = new URL(REMOTE_URL + "/" + databaseName + "/" + tableName);
+                tableReader = new BufferedReader(
+                        new InputStreamReader(url.openStream()));
+            } else {
+                String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
+                tableReader = new BufferedReader(new FileReader(tablePath));
+            }
+
             String rows;
             rows = tableReader.readLine();
+            rows = tableReader.readLine();
+            System.out.println(rows);
             String[] columns = rows.split("\\$");
             fieldMap = new HashMap<>();
             for (int i = 0; i < columns.length; i++) {
@@ -46,6 +61,7 @@ public class UpdateQueryExecutor {
 
     int getIndexOfKeyName(String keyName) {
         populateColumnMap();
+        System.out.println(fieldMap);
         for (Entry<Integer, String> columns : fieldMap.entrySet()) {
             if (columns.getValue().equalsIgnoreCase(keyName)) {
                 return (int) columns.getKey();
@@ -72,6 +88,7 @@ public class UpdateQueryExecutor {
             }
             resultSet.put(rows.getKey(), Arrays.asList(rowVal));
         }
+        System.out.println(resultSet);
         insertRowDetailsInFile(resultSet);
     }
 
@@ -99,10 +116,6 @@ public class UpdateQueryExecutor {
         try {
             try {
                 FileWriter insertRecord = new FileWriter("Database/" + databaseName + "/" + tableName + ".txt");
-                String headerLine = String.join("$", fieldMap.values());
-                System.out.println(headerLine);
-                insertRecord.write(headerLine);
-                insertRecord.write("\n");
                 for (Entry<Integer, List<String>> rows : resultSet.entrySet()) {
                     List<String> rowData = rows.getValue();
                     String line = String.join("$", rowData);
@@ -187,9 +200,9 @@ public class UpdateQueryExecutor {
     }
 
     public static void main(String[] args) {
-        UpdateQueryExecutor uqe = new UpdateQueryExecutor("students", "test", "local");
-        String operations = "csci5408=30";
-        String conditions = "English>=90";
+        UpdateQueryExecutor uqe = new UpdateQueryExecutor("testStudents18", "dw", "remote");
+        String operations = "age=80";
+        String conditions = "student_id=2";
         uqe.executeUpdateMain(operations, conditions);
     }
 

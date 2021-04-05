@@ -1,0 +1,51 @@
+use database dw
+use database dw
+use database dw
+create table testStudents17 (student_id varchar Primary Key, name varchar, age int, course varchar)
+use database dw
+create table testStudents17 (student_id varchar Primary Key, name varchar, age int, course varchar)
+use database dw
+insert into testStudents17 (student_id,name,age,course) values (2, Arun, 25, MACS)
+use database dw
+insert into testStudents17 (student_id,name,age,course) values (2, Arun, 25, MACS)
+use database dw
+create table testStudents17 (student_id varchar Primary Key, name varchar, age int, course varchar)
+create table testStudents18 (student_id varchar Primary Key, name varchar, age int, course varchar)
+insert into testStudents18 (student_id,name,age,course) values (2, Arun, 25, MACS)
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (2, Arun, 25, MACS)
+use database dw
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (2, Arun, 25, MACS)
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (2, Arun, 25, MACS)
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (4, Arun, 25, MACS)
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (5, Arun, 25, MACS)
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (2, Arun, 25, MACS)
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (2, Arun, 25, MACS)
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (2, Arun, 25, MACS)
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (2, Arun, 25, MACS)
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (2, Arun, 25, MACS)
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (2, Arun, 25, MACS)
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (2, Arun, 25, MACS)
+update testStudents18 set age=40
+update testStudents18 set age=40
+use database dw
+update testStudents18 set age=40
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (3, Hanna, 25, MACS)
+insert into testStudents18 (student_id,name,age,course) values (6, Yrun, 25, MACS)
+insert into testStudents18 (student_id,name,age,course) values (6,yued,24,MACS)
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (2, Arun, 25, MACS)
+use database dw
+insert into testStudents18 (student_id,name,age,course) values (2, Arun, 25, MACS)

@@ -1,0 +1,3 @@
+use database A
+create table A(student_id varchar Primary Key, name varchar, age int, course varchar)
+insert into A (student_id,name,age,course) values (2, Arun, 25, MACS)
