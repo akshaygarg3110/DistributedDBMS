@@ -28,7 +28,7 @@ public class QueryParser {
             query.replaceAll("\\s+", " ");
 
             Pattern pattern = Pattern.compile(
-                    "^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE DATABASE |BEGIN TRANSACTION |DROP TABLE |TRUNCATE TABLE |SHOW |DESC |DESCRIBE)",
+                    "^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE DATABASE |BEGIN TRANSACTION |DROP TABLE |TRUNCATE TABLE |SHOW |DESC |DESCRIBE )",
                     Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(query);
             boolean matchFound = matcher.find();
@@ -39,10 +39,12 @@ public class QueryParser {
                     tokenizeCreateDatabaseQuery(pattern, matcher, query);
                 } else if (queryType.trim().equalsIgnoreCase("USE DATABASE") && !isTransaction) {
                     tokenizeUseDatabaseQuery(pattern, matcher, query);
-                } else if (queryType.trim().equalsIgnoreCase("SHOW") && !isTransaction) {
+                } else if (queryType.trim().equalsIgnoreCase("SHOW DATABASES") && !isTransaction) {
                     tokenizeShowDatabaseQuery(pattern, matcher, query);
                 } else if (StringUtils.isBlank(QueryParser.databaseName)) {
                     System.out.println("Please specify database");
+                } else if (queryType.trim().equalsIgnoreCase("SHOW TABLES") && !isTransaction) {
+                    tokenizeShowTablesQuery(pattern, matcher, query);
                 } else if (queryType.trim().equalsIgnoreCase("SELECT") && !isTransaction) {
                     tokenizeSelectQuery(pattern, matcher, query);
                 } else if (queryType.trim().equalsIgnoreCase("UPDATE")) {
@@ -71,6 +73,30 @@ public class QueryParser {
         }
 
         return true;
+    }
+
+    private void tokenizeShowTablesQuery(Pattern pattern, Matcher matcher, String query) {
+        try {
+            BufferedReader reader = new BufferedReader(new FileReader("Database/meta.txt"));
+            System.out.println("Databases present are:");
+            System.out.println("Table name ___ Location");
+            String line;
+            boolean isDatabase = true;
+            while ((line = reader.readLine()) != null) {
+                String[] components = line.split("@@@");
+                if (components[1].equalsIgnoreCase(databaseName)) {
+                    isDatabase = true;
+                    System.out.println(components[2] + "___" + components[0]);
+                }
+            }
+            if (!isDatabase) {
+                System.out.println("no such database exists");
+            }
+            reader.close();
+        } catch (Exception e) {
+            System.out.println("Query Failed!");
+
+        }
     }
 
     private void tokenizeDescribeQuery(Pattern pattern, Matcher matcher, String query) {
