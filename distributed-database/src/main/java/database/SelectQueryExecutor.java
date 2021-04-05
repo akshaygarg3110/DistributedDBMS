@@ -24,9 +24,12 @@ public class SelectQueryExecutor {
     private Map<Integer, DataType> tableColumnsDataTypeMap;
     private List<String> conditionalOperators;
 
-    public SelectQueryExecutor(String tableName, String databaseName) {
+    private String location;
+
+    public SelectQueryExecutor(String tableName, String databaseName, String location) {
         this.tableName = tableName;
         this.databaseName = databaseName;
+        this.location = location;
     }
 
     public void setFieldList(List<String> fieldList) {
@@ -36,11 +39,19 @@ public class SelectQueryExecutor {
 
     BufferedReader getMetaReader() throws Exception {
         String metaPath = DATABASE_ROOT_PATH + "/meta.txt";
+        if (location.equalsIgnoreCase("REMOTE")) {
+            RemoteFileHandler rfh = new RemoteFileHandler(databaseName, tableName);
+            return rfh.getReader();
+        }
         return new BufferedReader(new FileReader(metaPath));
     }
 
     BufferedReader getTableReader() throws Exception {
         String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
+        if (location.equalsIgnoreCase("REMOTE")) {
+            RemoteFileHandler rfh = new RemoteFileHandler(databaseName, tableName);
+            return rfh.getReader();
+        }
         return new BufferedReader(new FileReader(tablePath));
     }
 
@@ -285,7 +296,7 @@ public class SelectQueryExecutor {
     }
 
     public static void main(String args[]) {
-        SelectQueryExecutor sqe = new SelectQueryExecutor("students", "test");
+        SelectQueryExecutor sqe = new SelectQueryExecutor("students", "test","local");
         String operation = "Select";
         String columns = "*";
         String conditions = "English<90";

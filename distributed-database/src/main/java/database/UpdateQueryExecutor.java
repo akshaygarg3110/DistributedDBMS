@@ -15,10 +15,12 @@ public class UpdateQueryExecutor {
     private String tableName;
     private String databaseName;
     private Map<Integer, String> fieldMap;
+    private String location;
 
-    public UpdateQueryExecutor(String tableName, String databaseName) {
+    public UpdateQueryExecutor(String tableName, String databaseName, String location) {
         this.tableName = tableName;
         this.databaseName = databaseName;
+        this.location = location;
     }
 
     BufferedReader getTableReader() throws Exception {
@@ -53,7 +55,7 @@ public class UpdateQueryExecutor {
     }
 
     public void performUpdateOnARow(String keyName, String keyValue, String updateKey, String updateValue, int compOperation) {
-        SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(tableName, databaseName);
+        SelectQueryExecutor selectQueryExecutor = new SelectQueryExecutor(tableName, databaseName, location);
         Map<Integer, List<String>> resultSet = selectQueryExecutor.executeSelectStatementWithFullColumns();
         int indexOfKey = getIndexOfKeyName(keyName);
         int indexOfUpdatedColumn = getIndexOfKeyName(updateKey);
@@ -95,7 +97,8 @@ public class UpdateQueryExecutor {
 
     private boolean insertRowDetailsInFile(Map<Integer, List<String>> resultSet) {
         try {
-            try (FileWriter insertRecord = new FileWriter("Database\\" + databaseName + "/" + tableName + ".txt")) {
+            try {
+                FileWriter insertRecord = new FileWriter("Database\\" + databaseName + "/" + tableName + ".txt");
                 String headerLine = String.join("$", fieldMap.values());
                 System.out.println(headerLine);
                 insertRecord.write(headerLine);
@@ -106,6 +109,13 @@ public class UpdateQueryExecutor {
                     insertRecord.write(line);
                     insertRecord.write("\n");
                 }
+                insertRecord.close();
+                if (location.equalsIgnoreCase("REMOTE")) {
+                    RemoteFileHandler rfh = new RemoteFileHandler(databaseName, tableName);
+                    rfh.uploadObject();
+                }
+            } catch (Exception e) {
+                System.out.println("unable to update");
             }
             return true;
         } catch (Exception e) {
@@ -177,7 +187,7 @@ public class UpdateQueryExecutor {
     }
 
     public static void main(String[] args) {
-        UpdateQueryExecutor uqe = new UpdateQueryExecutor("students", "test");
+        UpdateQueryExecutor uqe = new UpdateQueryExecutor("students", "test", "local");
         String operations = "csci5408=30";
         String conditions = "English>=90";
         uqe.executeUpdateMain(operations, conditions);
