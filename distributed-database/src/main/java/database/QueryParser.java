@@ -28,7 +28,7 @@ public class QueryParser {
             query.replaceAll("\\s+", " ");
 
             Pattern pattern = Pattern.compile(
-                    "^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE DATABASE |BEGIN TRANSACTION |DROP TABLE |TRUNCATE TABLE |SHOW |DESC |DESCRIBE )",
+                    "^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE DATABASE |BEGIN TRANSACTION |DROP TABLE |TRUNCATE TABLE |SHOW DATABASES|SHOW TABLES|DESC |DESCRIBE )",
                     Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(query);
             boolean matchFound = matcher.find();
