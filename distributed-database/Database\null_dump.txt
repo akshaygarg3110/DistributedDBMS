@@ -1,2 +1,0 @@
-create database csci_5408
-create database csci_5408
