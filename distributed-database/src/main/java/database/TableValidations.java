@@ -38,11 +38,11 @@ public class TableValidations {
     public String[] getColumns() {
         try {BufferedReader metaReader;
             if (location.equalsIgnoreCase("REMOTE")) {
-                URL url = new URL(REMOTE_URL + "/" + databaseName + tableName);
+                URL url = new URL(REMOTE_URL + "/meta");
                 metaReader = new BufferedReader(
                         new InputStreamReader(url.openStream()));
             } else {
-                String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
+                String tablePath = DATABASE_ROOT_PATH + "/"  + "meta.txt";
                 metaReader = new BufferedReader(new FileReader(tablePath));
             }
             String rows;
@@ -255,11 +255,11 @@ public class TableValidations {
         try {
             BufferedReader metaReader;
             if (location.equalsIgnoreCase("REMOTE")) {
-                URL url = new URL(REMOTE_URL + "/" + databaseName + tableName);
+                URL url = new URL(REMOTE_URL + "/meta" );
                 metaReader = new BufferedReader(
                         new InputStreamReader(url.openStream()));
             } else {
-                String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
+                String tablePath = DATABASE_ROOT_PATH + "/meta.txt";
                 metaReader = new BufferedReader(new FileReader(tablePath));
             }
             String rows;
