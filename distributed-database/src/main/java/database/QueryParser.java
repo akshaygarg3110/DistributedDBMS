@@ -120,8 +120,7 @@ public class QueryParser {
                 String location = getLocation(tableName);
                 TableValidations tableValidations = new TableValidations(tableName, databaseName, columnNames,
                         columnValues, location);
-                if (tableValidations.checkPrimaryKey(tableName) && tableValidations.checkForeignKey(tableName)
-                        && tableValidations.checkDataTypes("meta") && !isTransaction) {
+                if (!isTransaction) {
                     InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor(tableName, databaseName, location);
                     insertQueryExecutor.performInsertQueryOperation(columnValues);
                 } else {
@@ -260,7 +259,7 @@ public class QueryParser {
             tableForeignKeysObject.put("keys", foreignKeyArray);
             String location = getLocation(tableName);
             TableValidations taskValidation = new TableValidations(tableName, databaseName, columnDescArray, null, location);
-            if (taskValidation.checkIfTableNameValid(tableName)) {
+            if (location == null) {
                 CreateTableQuery createTableQuery = new CreateTableQuery();
                 createTableQuery.exceuteCreateTableQuery(QueryParser.databaseName, tableName, primaryKey, columns,
                         tableColumnsObject, tableForeignKeysObject);

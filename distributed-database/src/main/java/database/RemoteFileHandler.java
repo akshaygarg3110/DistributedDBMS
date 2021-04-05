@@ -1,18 +1,14 @@
 package database;
 
 import com.google.auth.oauth2.GoogleCredentials;
-import com.google.cloud.storage.BlobId;
-import com.google.cloud.storage.BlobInfo;
-import com.google.cloud.storage.Storage;
-import com.google.cloud.storage.StorageOptions;
-
-import java.io.BufferedReader;
+import com.google.cloud.storage.*;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.channels.WritableByteChannel;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import static java.nio.charset.StandardCharsets.UTF_8;
 
 public class RemoteFileHandler {
 
@@ -39,11 +35,12 @@ public class RemoteFileHandler {
         String googleFilePath;
         if (directoryName.equalsIgnoreCase(DEFAULT_DATABASE_ROOT_PATH)) {
             filePath = DEFAULT_DATABASE_ROOT_PATH + "/" + fileName + ".txt";
-            googleFilePath = DEFAULT_DATABASE_ROOT_PATH + "/" + fileName;
+            googleFilePath = DEFAULT_DATABASE_ROOT_PATH + "/" + directoryName +  "/" + fileName;
         } else {
             filePath = DEFAULT_DATABASE_ROOT_PATH + "/" + directoryName + "/" + fileName + ".txt";
-            googleFilePath = DEFAULT_DATABASE_ROOT_PATH + "/" + directoryName + "/" + fileName;
+            googleFilePath = fileName;
         }
+        System.out.println(Paths.get(filePath));
         StorageOptions storageOptions = StorageOptions.newBuilder()
                 .setProjectId(GOOGLE_PROJECT_ID)
                 .setCredentials(GoogleCredentials.fromStream(new
@@ -52,7 +49,17 @@ public class RemoteFileHandler {
         BlobId blobId = BlobId.of(GOOGLE_BUCKET_NAME,
                 googleFilePath);
         BlobInfo blobInfo = BlobInfo.newBuilder(blobId).build();
-        storage.create(blobInfo, Files.readAllBytes(Paths.get(filePath)));
+
+        Blob blob = storage.get(blobId);
+        if (blob != null) {
+            byte[] prevContent = blob.getContent();
+            System.out.println(new String(prevContent, UTF_8));
+            WritableByteChannel channel = blob.writer();
+            channel.write(ByteBuffer.wrap(Files.readAllBytes(Paths.get(filePath))));
+            channel.close();
+        } else {
+            storage.create(blobInfo, Files.readAllBytes(Paths.get(filePath)));
+        }
     }
 
 
@@ -75,17 +82,10 @@ public class RemoteFileHandler {
 
     public static void main(String[] args) {
         try {
-            /*RemoteFileHandler remoteFileHandler = new RemoteFileHandler("test", "students");
+            RemoteFileHandler remoteFileHandler = new RemoteFileHandler("dw", "testStudents19");
             remoteFileHandler.uploadObject();
-            String line;
-            BufferedReader reader = remoteFileHandler.getReader();
-            while ((line = reader.readLine()) != null) {
-                System.out.println(line);
-            }
-            remoteFileHandler.closeReader();*/
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 }
