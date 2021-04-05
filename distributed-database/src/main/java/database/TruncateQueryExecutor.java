@@ -4,17 +4,21 @@ import java.io.*;
 
 public class TruncateQueryExecutor {
     private String databaseName;
+    private String tableName;
+    private String location;
 
-    public TruncateQueryExecutor(String databaseName) {
+    public TruncateQueryExecutor(String tableName, String databaseName, String location) {
+        this.tableName = tableName;
         this.databaseName = databaseName;
+        this.location = location;
     }
 
-    public void performTruncateQueryOperation(String tableName) throws IOException {
+    public void performTruncateQueryOperation() throws IOException {
 
         String temp = "myFile2.txt";
 
-        File inputFile = new File( databaseName + '/' + tableName + ".txt");
-        File tempFile = new File( databaseName + '/' + temp);
+        File inputFile = new File( "Database/" + databaseName + '/' + tableName + ".txt");
+        File tempFile = new File( "Database/" + databaseName + '/' + temp);
 
         FileReader fileReader = new FileReader(inputFile);
         FileWriter fileWriter = new FileWriter(tempFile);
@@ -27,5 +31,10 @@ public class TruncateQueryExecutor {
         inputFile.delete();
         tempFile.renameTo(inputFile);
         System.out.println("Table values truncated");
+
+        if(location.equalsIgnoreCase("remote")){
+            RemoteFileHandler rhf = new RemoteFileHandler(databaseName, tableName);
+            rhf.deleteObject();
+        }
     }
 }

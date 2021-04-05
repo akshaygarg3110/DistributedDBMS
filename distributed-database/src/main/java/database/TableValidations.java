@@ -34,7 +34,6 @@ public class TableValidations {
         }
     }
 
-
     public String[] getColumns() {
         try {BufferedReader metaReader;
             if (location.equalsIgnoreCase("REMOTE")) {

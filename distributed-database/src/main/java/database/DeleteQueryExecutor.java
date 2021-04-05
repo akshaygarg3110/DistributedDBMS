@@ -8,10 +8,12 @@ public class DeleteQueryExecutor {
 
     private String tableName;
     private String databaseName;
+    private String location;
 
-    public DeleteQueryExecutor(String tableName, String databaseName) {
+    public DeleteQueryExecutor(String tableName, String databaseName, String location) {
         this.tableName = tableName;
         this.databaseName = databaseName;
+        this.location = location;
     }
 
     public void splitCondition(String condition) //Id=2
@@ -56,11 +58,10 @@ public class DeleteQueryExecutor {
 
     public void performDeleteQueryOperation(String column_name, String column_value, String operator) throws IOException
     {
-        System.out.println(operator);
-        String temp = "myFile2.csv";
+        String temp = "myFile2.txt";
 
-        File inputFile = new File(databaseName + '/' + tableName + ".csv");
-        File tempFile = new File(databaseName + '/' + temp);
+        File inputFile = new File("Database/" + databaseName + '/' + tableName + ".txt");
+        File tempFile = new File("Database/" + databaseName + '/' + temp);
 
         BufferedReader tableReader = new BufferedReader(new FileReader(inputFile));
         BufferedWriter tableWriter = new BufferedWriter(new FileWriter(tempFile));
@@ -78,66 +79,54 @@ public class DeleteQueryExecutor {
                     String[] columns = line.split("\\$");
                     if(operator.equals("=")) {
                         if (columns[columnIndex].trim().equals(column_value)) {
-                            System.out.println("Skipped " + columns[columnIndex]);
                             continue;
                         }
                         else{
-                            System.out.println("Added " + columns[columnIndex]);
                             records.add(columns);
                         }
                     }
                     else if(operator.equals(">"))
                     {
                         if(Integer.parseInt(columns[columnIndex]) > Integer.parseInt(column_value)){
-                            System.out.println("Skipped " + columns[columnIndex]);
                             continue;
                         }
                         else{
-                            System.out.println("Added " + columns[columnIndex]);
                             records.add(columns);
                         }
                     }
                     else if(operator.equals(">="))
                     {
                         if(Integer.parseInt(columns[columnIndex]) >= Integer.parseInt(column_value)){
-                            System.out.println("Skipped " + columns[columnIndex]);
                             continue;
                         }
                         else{
-                            System.out.println("Added " + columns[columnIndex]);
                             records.add(columns);
                         }
                     }
                     else if(operator.equals("<"))
                     {
                         if(Integer.parseInt(columns[columnIndex]) < Integer.parseInt(column_value)){
-                            System.out.println("Skipped " + columns[columnIndex]);
                             continue;
                         }
                         else{
-                            System.out.println("Added " + columns[columnIndex]);
                             records.add(columns);
                         }
                     }
                     else if(operator.equals("<="))
                     {
                         if(Integer.parseInt(columns[columnIndex]) <= Integer.parseInt(column_value)){
-                            System.out.println("Skipped " + columns[columnIndex]);
                             continue;
                         }
                         else{
-                            System.out.println("Added " + columns[columnIndex]);
                             records.add(columns);
                         }
                     }
                     else if(operator.equals("!="))
                     {
                         if(Integer.parseInt(columns[columnIndex]) != Integer.parseInt(column_value)){
-                            System.out.println("Skipped " + columns[columnIndex]);
                             continue;
                         }
                         else{
-                            System.out.println("Added " + columns[columnIndex]);
                             records.add(columns);
                         }
                     }
@@ -150,6 +139,11 @@ public class DeleteQueryExecutor {
                 tableWriter.close();
                 inputFile.delete();
                 tempFile.renameTo(inputFile);
+
+                if(location.equalsIgnoreCase("remote")){
+                    RemoteFileHandler rhf = new RemoteFileHandler(databaseName, tableName);
+                    rhf.uploadObject();
+                }
             } catch (IOException e) {
                 e.getStackTrace();
             }

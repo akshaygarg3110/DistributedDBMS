@@ -220,8 +220,10 @@ public class QueryParser {
             String operation = matcher.group(1);
             String tableName = matcher.group(2);
             String conditions = matcher.group(3);
+
             if (!isTransaction) {
-                DeleteQueryExecutor deleteQueryExecutor = new DeleteQueryExecutor(tableName, databaseName);
+                String location = getLocation(tableName);
+                DeleteQueryExecutor deleteQueryExecutor = new DeleteQueryExecutor(tableName, databaseName, location);
                 deleteQueryExecutor.splitCondition(conditions);
             }
             writeDump(query);
@@ -383,8 +385,9 @@ public class QueryParser {
         if (matcher.find()) {
             String tableName = matcher.group(3);
             try {
-                DropQueryExecutor dropQueryExecutor = new DropQueryExecutor(databaseName);
-                dropQueryExecutor.performDropQueryOperation(tableName);
+                String location = getLocation(tableName);
+                DropQueryExecutor dropQueryExecutor = new DropQueryExecutor(tableName, databaseName, location);
+                dropQueryExecutor.performDropQueryOperation();
                 writeDump(query);
             } catch (IOException e) {
                 System.out.println("Cannot DROP table" + e.getMessage());
@@ -420,8 +423,9 @@ public class QueryParser {
         if (matcher.find()) {
             String tableName = matcher.group(3);
             try {
-                TruncateQueryExecutor truncateQueryExecutor = new TruncateQueryExecutor(databaseName);
-                truncateQueryExecutor.performTruncateQueryOperation(tableName);
+                String location = getLocation(tableName);
+                TruncateQueryExecutor truncateQueryExecutor = new TruncateQueryExecutor(tableName, databaseName, location);
+                truncateQueryExecutor.performTruncateQueryOperation();
                 writeDump(query);
             } catch (IOException e) {
                 System.out.println("Cannot TRUNCATE table" + e.getMessage());

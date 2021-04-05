@@ -29,8 +29,11 @@ public class InsertQueryExecutor {
             tableWriter.newLine();
             tableWriter.flush();
             tableWriter.close();
-            RemoteFileHandler rhf = new RemoteFileHandler(databaseName, tableName);
-            rhf.uploadObject();
+            if(location.equalsIgnoreCase("remote"))
+            {
+                RemoteFileHandler rhf = new RemoteFileHandler(databaseName, tableName);
+                rhf.uploadObject();
+            }
         }
         catch(IOException e) {
             e.getStackTrace();
