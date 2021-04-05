@@ -1,2 +1,0 @@
-use database DW5408
-create database Alex
