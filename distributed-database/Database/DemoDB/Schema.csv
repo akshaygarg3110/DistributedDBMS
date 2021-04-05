@@ -1,0 +1,8 @@
+column_name$data_type$table_name$database_name$primary_key$foreign_key$foreign_key_table_name$foreign_key_column_name
+Id$Integer$Demo$DemoDB$true$$$
+Name$String$Demo$DemoDB$$$$
+Age$Integer$Demo$DemoDB$$$$
+Married$Boolean$Demo$DemoDB$$$$
+DepartmentId$Integer$Demo$DemoDB$$true$Department$Id
+VehicleId$Integer$Demo$DemoDB$$true$Vehicle$Id
+

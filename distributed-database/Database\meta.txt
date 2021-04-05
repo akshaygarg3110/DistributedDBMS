@@ -1,0 +1,1 @@
+local@@@DemoDB@@@TestStudents@@@student_id@@@{"columns":[{"columnType":"varchar","columnName":"student_id"},{"columnType":"varchar","columnName":"name"},{"columnType":"int","columnName":"age"},{"columnType":"varchar","columnName":"course"}]}@@@{"keys":[]}

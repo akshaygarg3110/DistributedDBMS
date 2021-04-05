@@ -1,2 +1,1 @@
 student_id$name$age$course
-28$Anna$88$MACS$2
