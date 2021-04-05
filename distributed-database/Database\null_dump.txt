@@ -1,4 +1,0 @@
-create database dw
-create database dw
-create database DW5408
-create database A
