@@ -22,8 +22,10 @@ public class TableValidations {
         this.databaseName = databaseName;
         this.columns = columns;
         this.values = values;
-        for (int i = 0; i < columns.length; i++) {
-            inputFieldMap.put(columns[i], values[i]);
+        if(!(columns == null || values == null)) {
+            for (int i = 0; i < columns.length; i++) {
+                inputFieldMap.put(columns[i], values[i]);
+            }
         }
     }
 
