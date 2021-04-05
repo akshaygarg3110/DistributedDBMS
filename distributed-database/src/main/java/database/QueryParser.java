@@ -69,7 +69,7 @@ public class QueryParser {
     private void writeDump(String query) {
         try {
             System.out.println(databaseName);
-            File file = new File("Database\\" + databaseName + "_dump.txt");
+            File file = new File("Database/" + databaseName + "_dump.txt");
             FileWriter fstream = new FileWriter(file, true);
             BufferedWriter out = new BufferedWriter(fstream);
             out.write(query);
