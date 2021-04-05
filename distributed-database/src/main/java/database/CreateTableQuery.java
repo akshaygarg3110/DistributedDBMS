@@ -63,7 +63,6 @@ public class CreateTableQuery {
                 if(num % 2 == 0) {
                 	RemoteFileHandler remoteFileHandler = new RemoteFileHandler(database, tableName);
                     remoteFileHandler.uploadObject();
-                	tableFile.delete();
                 	server = "remote";
                 } else {
                 	server = "local";

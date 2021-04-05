@@ -1,0 +1,27 @@
+use database b
+create table ts(student_id varchar Primary Key, name varchar, age int, course varchar)
+insert into ts(student_id,name,age,course) values (2, Arun, 25, MACS)
+use database b
+use database b
+create table bs(student_id varchar Primary Key, name varchar, age int, course varchar)
+create table cs(student_id varchar Primary Key, name varchar, age int, course varchar)
+create table ds(student_id varchar Primary Key, name varchar, age int, course varchar)
+create table ks(student_id varchar Primary Key, name varchar, age int, course varchar)
+create table ss(student_id varchar Primary Key, name varchar, age int, course varchar)
+create table ps(student_id varchar Primary Key, name varchar, age int, course varchar)
+create table test(student_id varchar Primary Key, name varchar, age int, course varchar)
+insert into test(student_id,name,age,course) values (2, Arun, 25, MACS)
+insert into test(student_id,name,age,course) values (3, Arun, 55, MACS)
+use database b
+use database b
+use database b
+use database b
+insert into test(student_id,name,age,course) values (5, Aruna, 10, MACS)
+use database b
+insert into test(student_id,name,age,course) values (10, Aruna, 45, MACS)
+use database b
+use database b
+use database b
+update test set name=kanchana where age=10
+use database b
+update test set name=rahul where age=10

@@ -1,0 +1,8 @@
+use database new
+create table group6(student_id varchar Primary Key, name varchar, age int, course varchar)
+create table g6(student_id varchar Primary Key, name varchar, age int, course varchar)
+create table grp4(student_id varchar Primary Key, name varchar, age int, course varchar)
+insert into grp4(student_id,name,age,course) values (2, Arun, 25, MACS)
+insert into grp4(student_id,name,age,course) values (4,varun,10,MACS)
+use database new
+insert into grp4(student_id,name,age,course) values (10,Vimal,30,MACS)

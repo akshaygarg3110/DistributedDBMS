@@ -1,0 +1,2 @@
+use database test2
+create table user(id integer, name varchar)

@@ -1,0 +1,10 @@
+use database news
+use database news
+create table g(student_id varchar Primary Key, name varchar, age int, course varchar)
+create table j(student_id varchar Primary Key, name varchar, age int, course varchar)
+insert into j(student_id,name,age,course) values (2, Arun, 25, MACS)
+insert into j(student_id,name,age,course) values (4, vrun,10,macsS)
+insert into j(student_id,name,age,course) values (10,Ajay,15, MACS)
+insert into j(student_id,name,age,course) values (11,Ankit,15,MACS)
+update j set name=anu where age=10
+use database news

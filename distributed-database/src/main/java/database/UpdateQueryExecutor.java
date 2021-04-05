@@ -19,7 +19,7 @@ public class UpdateQueryExecutor {
     private Map<Integer, String> fieldMap;
     private String location;
     private static final String DATABASE_ROOT_PATH = "Database";
-    private static final Object REMOTE_URL = "https://storage.googleapis.com/5408_project_team6/Database";
+    private static final Object REMOTE_URL = "https://storage.googleapis.com/csci5408_dbms_remote/Database";
 
     public UpdateQueryExecutor(String tableName, String databaseName, String location) {
         this.tableName = tableName;
@@ -36,16 +36,14 @@ public class UpdateQueryExecutor {
         try {
             BufferedReader tableReader;
             if (location.equalsIgnoreCase("REMOTE")) {
-                URL url = new URL(REMOTE_URL + "/" + databaseName + "/" + tableName);
-                tableReader = new BufferedReader(
-                        new InputStreamReader(url.openStream()));
+                RemoteFileHandler remoteFileHandler = new RemoteFileHandler(databaseName, tableName);
+                remoteFileHandler.downloadObject();
+                tableReader = new BufferedReader(new FileReader(DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt" ));
             } else {
                 String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
                 tableReader = new BufferedReader(new FileReader(tablePath));
             }
-
             String rows;
-            rows = tableReader.readLine();
             rows = tableReader.readLine();
             System.out.println(rows);
             String[] columns = rows.split("\\$");
@@ -95,17 +93,17 @@ public class UpdateQueryExecutor {
     private boolean constraintCheck(String presentValue, String keyValue, int compOperation) {
         switch (compOperation) {
             case 0:
-                return presentValue.equalsIgnoreCase(keyValue);
+                return presentValue.trim().equalsIgnoreCase(keyValue.trim());
             case 1:
-                return Integer.parseInt(presentValue) > Integer.parseInt(keyValue);
+                return Integer.parseInt(presentValue.trim()) > Integer.parseInt(keyValue);
             case 2:
-                return Integer.parseInt(presentValue) < Integer.parseInt(keyValue);
+                return Integer.parseInt(presentValue.trim()) < Integer.parseInt(keyValue);
             case 3:
                 return !presentValue.equalsIgnoreCase(keyValue);
             case 4:
-                return Integer.parseInt(presentValue) >= Integer.parseInt(keyValue);
+                return Integer.parseInt(presentValue.trim()) >= Integer.parseInt(keyValue);
             case 5:
-                return Integer.parseInt(presentValue) <= Integer.parseInt(keyValue);
+                return Integer.parseInt(presentValue.trim()) <= Integer.parseInt(keyValue);
             default:
                 return false;
 
@@ -200,9 +198,10 @@ public class UpdateQueryExecutor {
     }
 
     public static void main(String[] args) {
-        UpdateQueryExecutor uqe = new UpdateQueryExecutor("testStudents18", "dw", "remote");
-        String operations = "age=80";
-        String conditions = "student_id=2";
+        //update test set name=kanchana where age=10
+        UpdateQueryExecutor uqe = new UpdateQueryExecutor("test", "b", "remote");
+        String operations = "name=kanchana";
+        String conditions = "age=10";
         uqe.executeUpdateMain(operations, conditions);
     }
 

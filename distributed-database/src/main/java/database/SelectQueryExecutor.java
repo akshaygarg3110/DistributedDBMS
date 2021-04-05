@@ -15,7 +15,7 @@ import java.util.*;
 public class SelectQueryExecutor {
 
     private static final String DATABASE_ROOT_PATH = "Database";
-    private static final Object REMOTE_URL = "https://storage.googleapis.com/5408_project_team6/Database";
+    private static final Object REMOTE_URL = "https://storage.googleapis.com/csci5408_dbms_remote/Database";
     private String tableName;
     private String databaseName;
     private List<String> lhsConstraint;
@@ -43,9 +43,9 @@ public class SelectQueryExecutor {
         try {
             BufferedReader tableReader;
             if (location.equalsIgnoreCase("REMOTE")) {
-                URL url = new URL(REMOTE_URL + "/" + databaseName + tableName);
-                tableReader = new BufferedReader(
-                        new InputStreamReader(url.openStream()));
+                RemoteFileHandler remoteFileHandler = new RemoteFileHandler(databaseName, tableName);
+                remoteFileHandler.downloadObject();
+                tableReader = new BufferedReader(new FileReader(DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt" ));
             } else {
                 String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
                 tableReader = new BufferedReader(new FileReader(tablePath));
@@ -106,9 +106,9 @@ public class SelectQueryExecutor {
             Map<Integer, List<String>> selectResult = new HashMap<>();
             BufferedReader tableReader;
             if (location.equalsIgnoreCase("REMOTE")) {
-                URL url = new URL(REMOTE_URL + "/" + databaseName + "/" + tableName);
-                tableReader = new BufferedReader(
-                        new InputStreamReader(url.openStream()));
+                RemoteFileHandler remoteFileHandler = new RemoteFileHandler(databaseName, tableName);
+                remoteFileHandler.downloadObject();
+                tableReader = new BufferedReader(new FileReader(DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt" ));
             } else {
                 String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
                 tableReader = new BufferedReader(new FileReader(tablePath));
@@ -221,7 +221,7 @@ public class SelectQueryExecutor {
             String expectedValue = rhsConstraint.get(i);
             Operators operators = new Operators(operator);
             if (loadTypesOfIndex.get(i) == DataType.INTEGER) {
-                if (operators.performIntComparison(Integer.parseInt(actualValue), Integer.parseInt(expectedValue))) {
+                if (operators.performIntComparison(Integer.parseInt(actualValue.trim()), Integer.parseInt(expectedValue))) {
                     testPassOrder.add(true);
                 } else {
                     testPassOrder.add(false);
@@ -283,7 +283,6 @@ public class SelectQueryExecutor {
             lhsConstraint.add(operands[0]);
             rhsConstraint = new ArrayList<>();
             rhsConstraint.add(operands[1]);
-            System.out.println("Successfully fetched based on conditions:");
             if (!columns.equalsIgnoreCase("*")) {
                 fieldList = Arrays.asList(columns.split(","));
             }

@@ -1,0 +1,6 @@
+create database test
+create database test2
+create database b
+create database new
+create database news
+create database jumbo
