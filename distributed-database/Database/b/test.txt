@@ -1,4 +1,0 @@
-2$ Arun$ 25$ MACS
-3$ Arun$ 55$ MACS
-5$rahul$ 10$ MACS
-10$ Aruna$ 45$ MACS

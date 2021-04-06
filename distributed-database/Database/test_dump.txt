@@ -1,3 +1,0 @@
-use database test
-create table test_1(id integer, name varchar)
-use database test

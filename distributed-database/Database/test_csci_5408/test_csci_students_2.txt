@@ -1,2 +1,2 @@
 student_id$name$age$course
-2$ Arun$ 25$ MACS
+1$Arun$25$MACS

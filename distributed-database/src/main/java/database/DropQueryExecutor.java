@@ -19,10 +19,13 @@ public class DropQueryExecutor {
             try {
                 inputFile.delete();
                 System.out.println("Table dropped");
+                testClass testClassObj = new testClass();
+                testClassObj.removeFromMetaFile(tableName, "meta.txt");
 
                 if(location.equalsIgnoreCase("remote")){
                     RemoteFileHandler rhf = new RemoteFileHandler(databaseName, tableName);
                     rhf.deleteObject();
+                    testClassObj.removeFromMetaFile(tableName, "meta.txt");
                 }
             } catch (Exception e) {
                 System.out.println(e.getMessage());

@@ -1,6 +1,1 @@
-create database test
-create database test2
-create database b
-create database new
-create database news
-create database jumbo
+create database test_csci_5408

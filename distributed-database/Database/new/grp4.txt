@@ -1,4 +1,0 @@
-student_id$name$age$course
-2$ Arun$ 25$ MACS
-4$varun$10$MACS
-10$Vimal$30$MACS

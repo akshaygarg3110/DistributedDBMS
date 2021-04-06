@@ -198,7 +198,7 @@ public class TableValidations {
             }
             for (int i = 0; i < columns.length; i++) {
                 String dataType = (String) dataTypeMap.get(columns[i]).trim();
-                result = checkDataTypeWithValues(dataType, values[i]);
+                result = checkDataTypeWithValues(dataType, values[i], columns[i]);
                 if (result == false) {
                     break;
                 }
@@ -207,7 +207,7 @@ public class TableValidations {
         return result;
     }
 
-    public boolean checkDataTypeWithValues(String dataType, String value) {
+    public boolean checkDataTypeWithValues(String dataType, String value, String column) {
         String stripDataType = dataType.replaceAll("\\s+", "");
         String stripValue = value.replaceAll("\\s+", "");
         if (dataType.equals("varchar")) {
@@ -216,7 +216,13 @@ public class TableValidations {
                 return false;
             }
         } else if (stripDataType.equals("int")) {
-            Integer i = Integer.parseInt(stripValue);
+            try {
+                Integer i = Integer.parseInt(stripValue);
+            }
+            catch(NumberFormatException e){
+                System.out.println("Datatype mismatch. " + column + " must be int");
+                return false;
+            }
         } else if (stripDataType.equals("float")) {
             float f = Float.parseFloat(value);
         } else if (stripDataType.equals("bool")) {
