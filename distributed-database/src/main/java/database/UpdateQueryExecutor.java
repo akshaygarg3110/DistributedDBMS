@@ -110,6 +110,10 @@ public class UpdateQueryExecutor {
         try {
             try {
                 FileWriter insertRecord = new FileWriter("Database/" + databaseName + "/" + tableName + ".txt");
+                String headerLine = String.join("$", fieldMap.values());
+                System.out.println(headerLine);
+                insertRecord.write(headerLine);
+                insertRecord.write("\n");
                 for (Entry<Integer, List<String>> rows : resultSet.entrySet()) {
                     List<String> rowData = rows.getValue();
                     String line = String.join("$", rowData);

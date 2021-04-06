@@ -28,7 +28,7 @@ public class QueryParser {
             query.replaceAll("\\s+", " ");
 
             Pattern pattern = Pattern.compile(
-                    "^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE DATABASE |BEGIN TRANSACTION |DROP TABLE |TRUNCATE TABLE |SHOW DATABASES|SHOW TABLES|DESC |DESCRIBE )",
+                    "^(SELECT |UPDATE |INSERT |DELETE |CREATE TABLE |CREATE DATABASE |USE |BEGIN TRANSACTION |DROP TABLE |TRUNCATE TABLE |SHOW DATABASES|SHOW TABLES|DESC |DESCRIBE )",
                     Pattern.CASE_INSENSITIVE);
             Matcher matcher = pattern.matcher(query);
             boolean matchFound = matcher.find();
@@ -37,7 +37,7 @@ public class QueryParser {
                 System.out.println("Match found");
                 if (queryType.trim().equalsIgnoreCase("CREATE DATABASE") && !isTransaction) {
                     tokenizeCreateDatabaseQuery(pattern, matcher, query);
-                } else if (queryType.trim().equalsIgnoreCase("USE DATABASE") && !isTransaction) {
+                } else if (queryType.trim().equalsIgnoreCase("USE") && !isTransaction) {
                     tokenizeUseDatabaseQuery(pattern, matcher, query);
                 } else if (queryType.trim().equalsIgnoreCase("SHOW DATABASES") && !isTransaction) {
                     tokenizeShowDatabaseQuery(pattern, matcher, query);
@@ -392,11 +392,12 @@ public class QueryParser {
     }
 
     private void tokenizeUseDatabaseQuery(Pattern pattern, Matcher matcher, String query) {
-        pattern = Pattern.compile("(USE)\\s+(DATABASE)\\s+([\\w]+)\\s*$", Pattern.CASE_INSENSITIVE);
+//        pattern = Pattern.compile("(USE)\\s+(DATABASE)\\s+([\\w]+)\\s*$", Pattern.CASE_INSENSITIVE);
+    	pattern = Pattern.compile("(USE)\\s+([\\w]+)\\s*$", Pattern.CASE_INSENSITIVE);
         matcher = pattern.matcher(query);
 
         if (matcher.find()) {
-            String databaseName = matcher.group(3);
+            String databaseName = matcher.group(2);
             QueryParser.databaseName = databaseName;
             writeDump(query);
         } else {

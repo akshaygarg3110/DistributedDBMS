@@ -81,3 +81,86 @@ Foreign Keys: No Foreign Keys
 
 
 
+TableName: students
+Primary Key: student_id
+Columns: 
+ColumnName: student_id columnType: varchar
+ColumnName: name columnType: varchar
+ColumnName: age columnType: int
+ColumnName: course columnType: varchar
+Foreign Keys: No Foreign Keys
+
+
+TableName: students_1
+Primary Key: student_id
+Columns: 
+ColumnName: student_id columnType: int
+ColumnName: name columnType: varchar
+ColumnName: age columnType: int
+ColumnName: course columnType: varchar
+ColumnName: department_id columnType: int
+Foreign Keys: 
+foreignKeyColumnInTable: department_id foreignKeyColumnName: id foreignKeyTableName: department
+
+
+TableName: students_2
+Primary Key: student_id
+Columns: 
+ColumnName: student_id columnType: varchar
+ColumnName: name columnType: varchar
+ColumnName: age columnType: int
+ColumnName: course columnType: varchar
+Foreign Keys: No Foreign Keys
+
+
+TableName: students_3
+Primary Key: student_id
+Columns: 
+ColumnName: student_id columnType: varchar
+ColumnName: name columnType: varchar
+ColumnName: age columnType: int
+ColumnName: course columnType: varchar
+Foreign Keys: No Foreign Keys
+
+
+TableName: Test_Students
+Primary Key: student_id
+Columns: 
+ColumnName: student_id columnType: varchar
+ColumnName: name columnType: varchar
+ColumnName: age columnType: int
+ColumnName: course columnType: varchar
+Foreign Keys: No Foreign Keys
+
+
+TableName: test_students1
+Primary Key: student_id
+Columns: 
+ColumnName: student_id columnType: varchar
+ColumnName: name columnType: varchar
+ColumnName: age columnType: int
+ColumnName: course columnType: varchar
+Foreign Keys: No Foreign Keys
+
+
+TableName: testStudents10
+Primary Key: student_id
+Columns: 
+ColumnName: student_id columnType: varchar
+ColumnName: name columnType: varchar
+ColumnName: age columnType: int
+ColumnName: course columnType: varchar
+Foreign Keys: No Foreign Keys
+
+
+TableName: testStudents15
+Primary Key: student_id
+Columns: 
+ColumnName: student_id columnType: varchar
+ColumnName: name columnType: varchar
+ColumnName: age columnType: int
+ColumnName: course columnType: varchar
+Foreign Keys: No Foreign Keys
+
+
+
