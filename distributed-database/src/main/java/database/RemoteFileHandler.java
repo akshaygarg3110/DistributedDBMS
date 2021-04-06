@@ -88,8 +88,12 @@ public class RemoteFileHandler {
             googleFilePath = DEFAULT_DATABASE_ROOT_PATH + "/" + directoryName + "/" + fileName;
         }
         Storage storage = StorageOptions.newBuilder().setProjectId(GOOGLE_PROJECT_ID).build().getService();
+        try{
         Blob blob = storage.get(BlobId.of(GOOGLE_BUCKET_NAME, googleFilePath));
-        blob.downloadTo(Paths.get(filePath));
+        blob.downloadTo(Paths.get(filePath));}
+        catch(Exception e){
+            //e.getStackTrace();
+        }
     }
 
     public static void main(String[] args) {

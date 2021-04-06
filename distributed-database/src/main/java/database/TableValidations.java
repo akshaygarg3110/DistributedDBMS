@@ -41,7 +41,7 @@ public class TableValidations {
                 metaReader = new BufferedReader(
                         new InputStreamReader(url.openStream()));
             } else {
-                String tablePath = DATABASE_ROOT_PATH + "/" + this.databaseName + '/' + this.tableName + ".txt";
+                String tablePath = DATABASE_ROOT_PATH + "/meta.txt";
                 metaReader = new BufferedReader(new FileReader(tablePath));
             }
             String rows;

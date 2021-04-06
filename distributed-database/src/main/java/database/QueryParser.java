@@ -222,7 +222,7 @@ public class QueryParser {
                 String location = getLocation(tableName);
                 TableValidations tableValidations = new TableValidations(tableName, databaseName, columnNames,
                         columnValues, location);
-                if (!isTransaction) {
+                if (tableValidations.checkPrimaryKey(tableName) && !isTransaction) {
                     InsertQueryExecutor insertQueryExecutor = new InsertQueryExecutor(tableName, databaseName, location);
                     insertQueryExecutor.performInsertQueryOperation(columnValues);
                 } else {
