@@ -1,1 +1,3 @@
 create database test_csci_5408
+create database csci5408
+create database group10
